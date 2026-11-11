@@ -11,6 +11,36 @@ have access to our own system, it runs against `demo-target/`, a small wallet se
 **Rule of the pipeline:** tools capture, AI explains, tests verify, people decide.
 Nothing is marked *Seen* unless a probe proved it on the sandbox.
 
+## The pipeline
+
+```mermaid
+flowchart TB
+  subgraph capture["1. Set up and capture: no AI, fully automatic"]
+    direction LR
+    s0["<b>0. Sandbox</b><br/>staging clone,<br/>masked data"] --> s1["<b>1. Trace</b><br/>OpenTelemetry on<br/>every service"] --> s2["<b>2. Record</b><br/>traffic turned<br/>into tests"] --> s3["<b>3. Crawl</b><br/>Playwright walks<br/>every screen"] --> s4["<b>4. Data</b><br/>schema map +<br/>change capture"] --> s5["<b>5. Index code</b><br/>call graph;<br/>REA for binaries"]
+  end
+  subgraph ai["2. Understand, prove, rebuild: the AI loop"]
+    direction LR
+    s6["<b>6. Analyze</b><br/>one agent<br/>per service"] --> s7["<b>7. Verify</b><br/>every claim<br/>becomes a test"] --> s8["<b>8. Spec</b><br/>map, API,<br/>specs"] --> s9["<b>9. Rebuild</b><br/>builder sees specs<br/>+ tests only"] --> s10["<b>10. Parity</b><br/>diff old<br/>vs new"]
+    s7 -. "claim failed" .-> s6
+    s10 -. "differences" .-> s9
+  end
+  capture --> ai
+  ai --> people(["<b>People decide</b><br/>approve scope<br/>resolve unknowns<br/>keep or drop quirks<br/>sign off parity"])
+  classDef step fill:#e8eefc,stroke:#2846c4,color:#1b2230
+  classDef check fill:#e3f4ea,stroke:#1f7a4a,color:#1b2230
+  classDef human fill:#fff4d6,stroke:#9a6200,color:#1b2230
+  class s0,s1,s2,s3,s4,s5,s6,s8,s9,s10 step
+  class s7 check
+  class people human
+```
+
+This is the [pipeline whiteboard](https://claude.ai/artifact/4ekdowofD1WPxMS9YTo3py), which also has a
+worked example under each step (the wallet transfer, `POST /transfers`). The PoC follows the same
+steps; the table below says what each one does here and where it uses a lighter stand-in. The
+whiteboard runs the pipeline every night; this PoC runs it on every push instead, since the demo never
+changes.
+
 ## What each step does
 
 | Whiteboard step | Command | What it does | Output |
