@@ -78,6 +78,8 @@ export async function capture(cfg: Config) {
     byPhase: countBy(recordings.map((r) => r.phase)),
     statuses: countBy(recordings.map((r) => String(r.response.status))),
     tracedRequests: traces.filter((t) => t.spans > 0).length,
+    spans: spans.length,
+    tables: (schema.match(/^### /gm) ?? []).length,
     routes,
     sqlStatements: traces.reduce((n, t) => n + t.sql.length, 0),
     schemaCaptured: !!schema,

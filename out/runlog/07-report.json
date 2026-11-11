@@ -5,8 +5,8 @@
   "title": "Report",
   "does": "Writes one page for people: what is proven, what was refuted, what needs a decision, how close the rebuild is.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:07:39.841Z",
-  "ms": 2,
+  "startedAt": "2026-11-11T09:42:00.558Z",
+  "ms": 1,
   "inputs": [
     {
       "label": "Verdicts",
@@ -24,7 +24,7 @@
       "label": "Parity results",
       "path": "out/parity/report.json",
       "bytes": 10170,
-      "preview": "{\n  \"total\": 49,\n  \"different\": 0,\n  \"accepted\": 1,\n  \"diffRate\": 0,\n  \"results\": [\n    {\n      \"case\": \"journey: create wallet alice\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: create wallet bob\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: create EUR wallet carol\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: fund alice\",\n      \"request\": \"POST /wallets/85834e83-92a7-4853-9026-1d410166805f/deposits\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: send money\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: retry the same request\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view transfer\",\n      \"request\": \"GET /transfers/86cede16-a605-4126-b4c9-4ddd05828854\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view sender wallet\",\n      \"request\": \"GET /wallets/85834e83-92a7-4853-9026-1d410166805f\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view receiver wallet\",\n      \"request\": \"GET /wallets/d349b8a2-8b70-4128-92ce-b0158d68f7e5\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: send to EUR wallet\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    \n…"
+      "preview": "{\n  \"total\": 49,\n  \"different\": 0,\n  \"accepted\": 1,\n  \"diffRate\": 0,\n  \"results\": [\n    {\n      \"case\": \"journey: create wallet alice\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: create wallet bob\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: create EUR wallet carol\",\n      \"request\": \"POST /wallets\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: fund alice\",\n      \"request\": \"POST /wallets/e7ef318f-3e67-4987-8e98-06980cf91124/deposits\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: send money\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: retry the same request\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view transfer\",\n      \"request\": \"GET /transfers/d91d3cb0-da3f-4b1a-8976-bc4bb4256979\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view sender wallet\",\n      \"request\": \"GET /wallets/e7ef318f-3e67-4987-8e98-06980cf91124\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: view receiver wallet\",\n      \"request\": \"GET /wallets/06080a56-2a58-4cbe-8fb0-e809686af1a3\",\n      \"same\": true,\n      \"differences\": []\n    },\n    {\n      \"case\": \"journey: send to EUR wallet\",\n      \"request\": \"POST /transfers\",\n      \"same\": true,\n      \"differences\": []\n    },\n    \n…"
     }
   ],
   "outputs": [
@@ -32,17 +32,17 @@
       "label": "Run report",
       "path": "out/report.md",
       "bytes": 856,
-      "preview": "# Reverse engineering run: demo-wallet\n\nRun at 2026-11-11T09:07:39.842Z.\n\n| Measure | Value |\n| --- | --- |\n| Findings | 28 |\n| Proven by a probe (Seen) | 27 |\n| Claims refuted by their probe | 0 |\n| Open unknowns for people | 5 |\n| Rebuild parity | 48/49 match, 1 accepted, 0 open |\n\n## Refuted claims (go back to analysis)\n- none\n\n## Unknowns (people decide)\n- Can wallets be closed, renamed or have their currency changed? (wallets-U1)\n- How does a pending_review transfer get approved or rejected? (transfers-U1)\n- Is the fee refunded if a held transfer is rejected? (transfers-U2)\n- Should the daily limit follow the UTC day or the customer's local day? (transfers-U3)\n- Is returning the old transfer for a reused Idempotency-Key with a different body intended? (transfers-U4)\n\nDetails: out/spec/spec.md, out/verify/results.json, out/parity/report.md\n"
+      "preview": "# Reverse engineering run: demo-wallet\n\nRun at 2026-11-11T09:42:00.558Z.\n\n| Measure | Value |\n| --- | --- |\n| Findings | 28 |\n| Proven by a probe (Seen) | 27 |\n| Claims refuted by their probe | 0 |\n| Open unknowns for people | 5 |\n| Rebuild parity | 48/49 match, 1 accepted, 0 open |\n\n## Refuted claims (go back to analysis)\n- none\n\n## Unknowns (people decide)\n- Can wallets be closed, renamed or have their currency changed? (wallets-U1)\n- How does a pending_review transfer get approved or rejected? (transfers-U1)\n- Is the fee refunded if a held transfer is rejected? (transfers-U2)\n- Should the daily limit follow the UTC day or the customer's local day? (transfers-U3)\n- Is returning the old transfer for a reused Idempotency-Key with a different body intended? (transfers-U4)\n\nDetails: out/spec/spec.md, out/verify/results.json, out/parity/report.md\n"
     }
   ],
   "lines": [
     {
-      "ms": 1,
+      "ms": 0,
       "level": "ok",
       "msg": "27 of 28 findings proven, 0 refuted, 5 open questions"
     },
     {
-      "ms": 1,
+      "ms": 0,
       "level": "ok",
       "msg": "parity: 48 of 49 cases match, 1 accepted, 0 open"
     }

@@ -5,14 +5,14 @@
   "title": "Analyze",
   "does": "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:07:19.458Z",
-  "ms": 15,
+  "startedAt": "2026-11-11T09:41:50.381Z",
+  "ms": 14,
   "inputs": [
     {
       "label": "Recorded requests",
       "path": "out/capture/recordings.json",
       "bytes": 17187,
-      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.564Z\"\n      }\n    },\n    \"traceId\": \"dfcd543e0c4884333ebc97d784bbee72\",\n    \"ms\": 23\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"fa43818e-91b1-4c7d-a552-2bb69c13229d\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.573Z\"\n      }\n    },\n    \"traceId\": \"84fbb85cdf85ec30ccf35858ebe40cd3\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"10033d43-2075-48db-b2b1-cea295f29d0a\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.211Z\"\n      }\n    },\n    \"traceId\": \"46c9671251392f08d4764c36b485af14\",\n    \"ms\": 33\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.222Z\"\n      }\n    },\n    \"traceId\": \"8c430208de2f0f2fb566b527f1b2d334\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Traces (route + SQL per request)",
@@ -67,7 +67,7 @@
   ],
   "lines": [
     {
-      "ms": 0,
+      "ms": 1,
       "level": "info",
       "msg": "mode: manual (no ANTHROPIC_API_KEY or --manual): prompts are written, findings come from findings.json files"
     },
@@ -77,17 +77,17 @@
       "msg": "area /wallets: 6 requests, routes /wallets, /wallets/:id/deposits, /wallets/:id; evidence bundle 9k chars"
     },
     {
-      "ms": 5,
+      "ms": 7,
       "level": "ok",
       "msg": "area /wallets: 8 findings (8 with probes), 1 unknowns"
     },
     {
-      "ms": 9,
+      "ms": 11,
       "level": "info",
       "msg": "area /transfers: 16 requests, routes /transfers, /transfers/:id; evidence bundle 26k chars"
     },
     {
-      "ms": 10,
+      "ms": 12,
       "level": "ok",
       "msg": "area /transfers: 20 findings (19 with probes), 4 unknowns"
     }

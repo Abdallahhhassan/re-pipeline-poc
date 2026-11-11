@@ -13,6 +13,8 @@
     "422": 2
   },
   "tracedRequests": 22,
+  "spans": 791,
+  "tables": 3,
   "routes": [
     "/wallets",
     "/wallets/:id/deposits",

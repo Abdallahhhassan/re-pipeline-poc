@@ -49,48 +49,48 @@ Routes observed: /wallets, /wallets/:id/deposits, /wallets/:id
 ## Recorded requests
 #### fixture-001 (fixture) create wallet alice
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"alice"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea","owner":"alice","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:07:18.564Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"10033d43-2075-48db-b2b1-cea295f29d0a","owner":"alice","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:41:49.211Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["alice","USD"]
 
 #### fixture-002 (fixture) create wallet bob
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"bob"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"fa43818e-91b1-4c7d-a552-2bb69c13229d","owner":"bob","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:07:18.573Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","owner":"bob","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:41:49.222Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["bob","USD"]
 
 #### fixture-003 (fixture) create EUR wallet carol
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"carol","currency":"EUR"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"a8dc73ac-3b5b-4592-9e2f-863834fefe72","owner":"carol","currency":"EUR","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:07:18.578Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"b8d9a559-70b7-409a-81ce-dbe70a9ed374","owner":"carol","currency":"EUR","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:41:49.228Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["carol","EUR"]
 
 #### fixture-004 (fixture) fund alice
-- request: POST /wallets/decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea/deposits headers={"content-type":"application/json"} body={"amount":20000}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"walletId":"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea","balance":"20000.00"}
+- request: POST /wallets/10033d43-2075-48db-b2b1-cea295f29d0a/deposits headers={"content-type":"application/json"} body={"amount":20000}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"walletId":"10033d43-2075-48db-b2b1-cea295f29d0a","balance":"20000.00"}
 - route: /wallets/:id/deposits
 - sql:
     - BEGIN
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *  values=["decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea","20000"]
-    - INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)  values=["decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea","20000"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *  values=["10033d43-2075-48db-b2b1-cea295f29d0a","20000"]
+    - INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)  values=["10033d43-2075-48db-b2b1-cea295f29d0a","20000"]
     - COMMIT
 
 #### flow-008 (flow) view sender wallet
-- request: GET /wallets/decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea headers={} body=null
-- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea","owner":"alice","currency":"USD","balance":"19899.00","held":"0.00","createdAt":"2026-11-11T09:07:18.564Z"}
+- request: GET /wallets/10033d43-2075-48db-b2b1-cea295f29d0a headers={} body=null
+- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"10033d43-2075-48db-b2b1-cea295f29d0a","owner":"alice","currency":"USD","balance":"19899.00","held":"0.00","createdAt":"2026-11-11T09:41:49.211Z"}
 - route: /wallets/:id
 - sql:
-    - SELECT * FROM wallets WHERE id = $1  values=["decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea"]
+    - SELECT * FROM wallets WHERE id = $1  values=["10033d43-2075-48db-b2b1-cea295f29d0a"]
 
 #### flow-009 (flow) view receiver wallet
-- request: GET /wallets/fa43818e-91b1-4c7d-a552-2bb69c13229d headers={} body=null
-- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"fa43818e-91b1-4c7d-a552-2bb69c13229d","owner":"bob","currency":"USD","balance":"100.00","held":"0.00","createdAt":"2026-11-11T09:07:18.573Z"}
+- request: GET /wallets/7b86dd2e-7e8a-4428-8065-c5564ad2b7bf headers={} body=null
+- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","owner":"bob","currency":"USD","balance":"100.00","held":"0.00","createdAt":"2026-11-11T09:41:49.222Z"}
 - route: /wallets/:id
 - sql:
-    - SELECT * FROM wallets WHERE id = $1  values=["fa43818e-91b1-4c7d-a552-2bb69c13229d"]
+    - SELECT * FROM wallets WHERE id = $1  values=["7b86dd2e-7e8a-4428-8065-c5564ad2b7bf"]
 
 ## Database schema
 ### ledger_entries

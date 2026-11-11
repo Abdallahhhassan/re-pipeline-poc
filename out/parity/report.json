@@ -24,7 +24,7 @@
     },
     {
       "case": "journey: fund alice",
-      "request": "POST /wallets/85834e83-92a7-4853-9026-1d410166805f/deposits",
+      "request": "POST /wallets/e7ef318f-3e67-4987-8e98-06980cf91124/deposits",
       "same": true,
       "differences": []
     },
@@ -42,19 +42,19 @@
     },
     {
       "case": "journey: view transfer",
-      "request": "GET /transfers/86cede16-a605-4126-b4c9-4ddd05828854",
+      "request": "GET /transfers/d91d3cb0-da3f-4b1a-8976-bc4bb4256979",
       "same": true,
       "differences": []
     },
     {
       "case": "journey: view sender wallet",
-      "request": "GET /wallets/85834e83-92a7-4853-9026-1d410166805f",
+      "request": "GET /wallets/e7ef318f-3e67-4987-8e98-06980cf91124",
       "same": true,
       "differences": []
     },
     {
       "case": "journey: view receiver wallet",
-      "request": "GET /wallets/d349b8a2-8b70-4128-92ce-b0158d68f7e5",
+      "request": "GET /wallets/06080a56-2a58-4cbe-8fb0-e809686af1a3",
       "same": true,
       "differences": []
     },

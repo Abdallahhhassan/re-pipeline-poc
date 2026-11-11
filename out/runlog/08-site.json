@@ -5,8 +5,8 @@
   "title": "Results page",
   "does": "Renders this page from the run's outputs.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:07:40.324Z",
-  "ms": 4,
+  "startedAt": "2026-11-11T09:42:20.065Z",
+  "ms": 6,
   "inputs": [
     {
       "label": "Run log of each step",
@@ -18,8 +18,8 @@
     {
       "label": "Results page",
       "path": "site/index.html",
-      "bytes": 144222,
-      "preview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>RE Pipeline Run</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap\" rel=\"stylesheet\">\n<style>\n/* Layout: one scrolling run report. Summary first, then evidence, sticky section nav on top. */\n:root {\n  --paper: #f5f6f3;\n  --panel: #ffffff;\n  --ink: #17201d;\n  --muted: #5d6762;\n  --line: #dde1dc;\n  --accent: #1f5f8b;\n  --seen: #1d7a4c;  --seen-bg: #e3f3ea;\n  --inferred: #8a5a00; --inferred-bg: #fbf0d9;\n  --unknown: #5b5486; --unknown-bg: #ecebf6;\n  --bad: #b3261e; --bad-bg: #fbe4e2;\n  --font-body: \"IBM Plex Sans\", system-ui, -apple-system, \"Segoe UI\", sans-serif;\n  --font-mono: \"IBM Plex Mono\", ui-monospace, \"SF Mono\", Menlo, monospace;\n  color-scheme: light;\n}\n@media (prefers-color-scheme: dark) {\n  :root:not([data-theme=\"light\"]) {\n    --paper: #121715; --panel: #1a201e; --ink: #e6ebe8; --muted: #9aa5a0; --line: #2c3431; --accent: #6fb0dd;\n    --seen: #6fd3a0; --seen-bg: #173326; --inferred: #f0c060; --inferred-bg: #362a10;\n    --unknown: #b4adeb; --unknown-bg: #262340; --bad: #ff8a80; --bad-bg: #3b1714;\n    color-scheme: dark;\n  }\n}\n:root[data-theme=\"dark\"] {\n  --paper: #121715; --panel: #1a201e; --ink: #e6ebe8; --muted: #9aa5a0; --line: #2c3431; --accent: #6fb0dd;\n  --seen: #6fd3a0; --seen-bg: #173326; --inferred: #f0c060;\n…"
+      "bytes": 143083,
+      "preview": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>RE Pipeline Run</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n<style>\n/* A short engineering report: one readable column, the run as a rail of steps, raw data last. */\n:root {\n  --bg: #f6f7f9;\n  --surface: #ffffff;\n  --ink: #1b2230;\n  --muted: #5a6372;\n  --rule: #dde2e9;\n  --accent: #2846c4;\n  --code-bg: #eef1f5;\n  --good: #1f7a4a;\n  --warn: #9a6200;\n  --bad: #b42318;\n  --font: \"Atkinson Hyperlegible Next\", \"Atkinson Hyperlegible\", system-ui, -apple-system, \"Segoe UI\", sans-serif;\n  --mono: \"Atkinson Hyperlegible Mono\", ui-monospace, \"SF Mono\", Menlo, Consolas, monospace;\n  color-scheme: light;\n}\n@media (prefers-color-scheme: dark) {\n  :root:not([data-theme=\"light\"]) {\n    --bg: #12161d; --surface: #1a1f28; --ink: #e7ebf2; --muted: #9aa4b4; --rule: #2b3240;\n    --accent: #8ea6ff; --code-bg: #232a35; --good: #6fd39f; --warn: #f1c063; --bad: #ff8f86;\n    color-scheme: dark;\n  }\n}\n:root[data-theme=\"dark\"] {\n  --bg: #12161d; --surface: #1a1f28; --ink: #e7ebf2; --muted: #9aa4b4; --rule: #2b3240;\n  --accent: #8ea6ff; --code-bg: #232a35; --good: #6fd39f; --warn: #f1c063; --bad: #ff8f86;\n  color-scheme: dark;\n}\n* { box-sizing: border-box; }\nhtml { -webkit-text-size-adjust: 100%; }\nbo\n…"
     }
   ],
   "lines": [
@@ -31,6 +31,6 @@
   ],
   "summary": {
     "page": "site/index.html",
-    "kb": 141
+    "kb": 139
   }
 }
