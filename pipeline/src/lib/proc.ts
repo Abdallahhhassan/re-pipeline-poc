@@ -29,6 +29,9 @@ export async function startService(
     env.RE_TRACE_FILE = opts.traceFile;
     env.RE_SERVICE_NAME = opts.label;
   }
+  // A leftover process on the same port would answer instead of this one (and without tracing).
+  const busy = await fetch(svc.baseUrl + "/", { signal: AbortSignal.timeout(500) }).then(() => true, () => false);
+  if (busy) throw new Error(`${svc.baseUrl} already answers before ${opts.label} started. Stop the old process on that port first.`);
   log.info(`start ${opts.label}: ${svc.start.command}${opts.traceFile ? " with OpenTelemetry injected (NODE_OPTIONS=--require register.cjs)" : ""}`);
   const t0 = Date.now();
   const logFile = path.join(cfg.outDir, "logs", `${opts.label}.log`);

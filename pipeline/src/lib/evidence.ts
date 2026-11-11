@@ -109,6 +109,14 @@ export function sliceSource(dir: string, extensions: string[], routes: string[])
   return [...picked].sort().map((f) => ({ file: path.relative(process.cwd(), f), content: fs.readFileSync(f, "utf8") }));
 }
 
+/** Every source file under dir, for small front ends where the whole thing is the evidence. */
+export function allSource(dir: string, extensions: string[]) {
+  return walk(dir)
+    .filter((f) => extensions.includes(path.extname(f)))
+    .sort()
+    .map((f) => ({ file: path.relative(process.cwd(), f), content: fs.readFileSync(f, "utf8") }));
+}
+
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.join(dir, e.name);

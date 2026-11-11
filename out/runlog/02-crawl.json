@@ -1,0 +1,185 @@
+{
+  "step": "crawl",
+  "order": 2,
+  "n": "3",
+  "title": "Crawl the UI",
+  "does": "Opens the app in a real browser (Playwright), visits each screen, records its fields, buttons and the API calls it makes, then fills each form with one value changed per try. Every click is traced through to the backend route and SQL. No AI.",
+  "status": "ok",
+  "startedAt": "2026-11-11T11:32:51.384Z",
+  "ms": 13826,
+  "tools": [
+    {
+      "name": "Playwright",
+      "purpose": "drives Chrome: opens each screen, reads its structure, fills forms by their labels, clicks buttons, takes screenshots",
+      "where": "pipeline/src/lib/browser.ts",
+      "link": "https://playwright.dev"
+    },
+    {
+      "name": "Playwright request routing",
+      "purpose": "adds a traceparent header to the page's API calls, as the OpenTelemetry browser SDK would, so each click links to backend spans",
+      "where": "pipeline/src/lib/browser.ts (tracedPage)"
+    },
+    {
+      "name": "OpenTelemetry Node SDK + auto-instrumentations",
+      "purpose": "traces the backend while the browser clicks around",
+      "where": "pipeline/src/otel/register.cjs",
+      "link": "https://opentelemetry.io/docs/languages/js/"
+    },
+    {
+      "name": "psql",
+      "purpose": "puts the database back to a known state before each run and each test",
+      "where": "reset.command in re.config.yaml"
+    },
+    {
+      "name": "Node child_process",
+      "purpose": "starts and stops the service under test",
+      "where": "pipeline/src/lib/proc.ts"
+    }
+  ],
+  "inputs": [
+    {
+      "label": "UI settings (start page, forms to try)",
+      "path": "re.config.yaml",
+      "bytes": 3600,
+      "preview": "# One file describes the system under analysis. Point it at the real system when access lands.\nout: out\n\ntarget:\n  name: demo-wallet\n  baseUrl: http://127.0.0.1:4001\n  start:\n    command: node demo-target/dist/server.js\n    env:\n      PORT: \"4001\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_demo\n  # node-auto injects OpenTelemetry into a Node process with no code changes.\n  tracing: node-auto\n  # Sandbox only: puts the data back to a known state before each run and probe.\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql 2>/dev/null\n  database:\n    url: postgres://postgres@127.0.0.1:5432/re_demo\n  source:\n    dir: demo-target/src\n    extensions: [.ts, .js]\n\nscenarios: scenarios/demo.yaml\n\n# Controlled probing: on steps marked `probe: true`, try each value for each field, one at a time.\nprobes:\n  fields: [amount]\n  # 4.35 is a float trap: 4.35 * 100 is 434.99999999999994 in JavaScript.\n  values: [0, -5, 0.005, 1.5, 199.99, 4999.99, 5000, 10000, 10000.01, \"100\", 4.35]\n  dropHeaders: [Idempotency-Key]\n\nanalysis:\n  model: claude-sonnet-5-5\n  maxTokens: 16000\n\nrebuild:\n  dir: rebuilt\n  model: claude-sonnet-5-5\n\n# The rebuilt service, started the same way for verification and parity.\nrebuilt:\n  baseUrl: http://127.0.0.1:4002\n  start:\n    command: node rebuilt/dist/server.js\n    env:\n      PORT: \"4002\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_rebuilt\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_rebuilt -q -f rebuilt/schema.sql 2>/dev/null\n\nparity:\n  # Values that differ on every run\n…"
+    },
+    {
+      "label": "Scenarios (fixtures create the test wallets)",
+      "path": "scenarios/demo.yaml",
+      "bytes": 1751,
+      "preview": "# Scenarios = ordinary user journeys. In the real setup these come from the Playwright crawler\n# or from recorded sessions; probing (see re.config.yaml) explores the edges automatically.\nfixtures:\n  - name: create wallet alice\n    request: { method: POST, path: /wallets, body: { owner: alice } }\n    save: { alice: body.id }\n  - name: create wallet bob\n    request: { method: POST, path: /wallets, body: { owner: bob } }\n    save: { bob: body.id }\n  - name: create EUR wallet carol\n    request: { method: POST, path: /wallets, body: { owner: carol, currency: EUR } }\n    save: { carol: body.id }\n  - name: fund alice\n    request: { method: POST, path: \"/wallets/{{alice}}/deposits\", body: { amount: 20000 } }\n\nflows:\n  - name: send money\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n    save: { t1: body.id }\n    probe: true\n  - name: retry the same request\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n  - name: view transfer\n    request: { method: GET, path: \"/transfers/{{t1}}\" }\n  - name: view sender wallet\n    request: { method: GET, path: \"/wallets/{{alice}}\" }\n  - name: view receiver wallet\n    request: { method: GET, path: \"/wallets/{{bob}}\" }\n  - name: send to EUR wallet\n    request:\n      method: POST\n      path: /transfers\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{carol}}\", amount: 50 }\n  - name: bob sends\n…"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Screens: structure, fields, buttons, links, API calls on load",
+      "path": "out/ui/screens.json",
+      "bytes": 3579,
+      "preview": "[\n  {\n    \"id\": \"screen-01\",\n    \"template\": \"/#/wallets\",\n    \"url\": \"http://127.0.0.1:4001/#/wallets\",\n    \"title\": \"Wallets\",\n    \"structure\": \"- main:\\n  - heading \\\"Wallets\\\" [level=1]\\n  - table:\\n    - rowgroup:\\n      - row \\\"Owner Currency Balance On hold\\\":\\n        - columnheader \\\"Owner\\\"\\n        - columnheader \\\"Currency\\\"\\n        - columnheader \\\"Balance\\\"\\n        - columnheader \\\"On hold\\\"\\n        - columnheader\\n    - rowgroup:\\n      - row \\\"alice USD 20,000.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"alice\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"20,000.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\\\"\\n      - row \\\"bob USD 0.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"bob\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\\\"\\n      - row \\\"carol EUR 0.00 EUR 0.00 EUR Send money\\\":\\n        - cell \\\"carol\\\"\\n        - cell \\\"EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\\\"\",\n    \"heading\": \"Wallets\",\n    \"fields\": [],\n    \"buttons\": [],\n    \"links\": [\n      \"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\",\n      \"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\",\n      \"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\"\n    \n…"
+    },
+    {
+      "label": "Form tries: what was typed, what the page said, API calls and their SQL",
+      "path": "out/ui/interactions.json",
+      "bytes": 11091,
+      "preview": "[\n  {\n    \"id\": \"ui-001\",\n    \"form\": \"send money\",\n    \"name\": \"send money\",\n    \"goto\": \"/#/send/{{alice}}\",\n    \"fill\": {\n      \"To\": \"bob\",\n      \"Amount\": \"100\"\n    },\n    \"click\": \"Send money\",\n    \"messages\": [\n      \"Sent 100.00 USD to bob. Fee 1.00 USD.\"\n    ],\n    \"screenText\": \"Back to wallets\\nSend money\\n\\nFrom alice: 19,899.00 USD available\\n\\nTo\\nbob (USD)\\ncarol (EUR)\\nAmount\\n\\nFee: 1.00 USD\\n\\nSend money\\nSent 100.00 USD to bob. Fee 1.00 USD.\",\n    \"calls\": [\n      {\n        \"method\": \"POST\",\n        \"path\": \"/transfers\",\n        \"status\": 201,\n        \"traceId\": \"25d237beae79ad53c802c25ba1cb4dd4\",\n        \"ms\": 23,\n        \"route\": \"/transfers\",\n        \"sql\": [\n          \"SELECT * FROM transfers WHERE idempotency_key = $1\",\n          \"BEGIN\",\n          \"SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE\",\n          \"SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'\",\n          \"INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)\",\n          \"UPDATE wallets SET balance = balance - $2 WHERE id = $1\",\n          \"UPDATE wallets SET balance = balance + $2 WHERE id = $1\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'tran\n…\n… 7 more items (9 total)"
+    },
+    {
+      "label": "Screenshots",
+      "path": "out/ui/screens",
+      "bytes": 4096
+    }
+  ],
+  "lines": [
+    {
+      "ms": 5,
+      "level": "info",
+      "msg": "reset data: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql"
+    },
+    {
+      "ms": 57,
+      "level": "info",
+      "msg": "start target-ui: node demo-target/dist/server.js with OpenTelemetry injected (NODE_OPTIONS=--require register.cjs)"
+    },
+    {
+      "ms": 477,
+      "level": "ok",
+      "msg": "target-ui answering on http://127.0.0.1:4001 after 420ms"
+    },
+    {
+      "ms": 769,
+      "level": "ok",
+      "msg": "browser started: Chrome 153.0.8010.12"
+    },
+    {
+      "ms": 875,
+      "level": "info",
+      "msg": "explore from /#/wallets, up to 15 screens, one per URL shape"
+    },
+    {
+      "ms": 1728,
+      "level": "ok",
+      "msg": "screen-01 /#/wallets: \"Wallets\", 0 fields, 0 buttons, 1 API calls on load"
+    },
+    {
+      "ms": 2405,
+      "level": "ok",
+      "msg": "screen-02 /#/send/:id: \"Send money\", 2 fields, 1 buttons, 2 API calls on load"
+    },
+    {
+      "ms": 4167,
+      "level": "info",
+      "msg": "form \"send money\": 8 tries, each after a data reset and the fixtures"
+    },
+    {
+      "ms": 5255,
+      "level": "info",
+      "msg": "ui-001 send money: POST /transfers → 201, GET /wallets/:id → 200; shows \"Sent 100.00 USD to bob. Fee 1.00 USD.\""
+    },
+    {
+      "ms": 6280,
+      "level": "info",
+      "msg": "ui-002 send money [Amount=\"\"]: no API call; shows \"Enter an amount above 0.\""
+    },
+    {
+      "ms": 7350,
+      "level": "info",
+      "msg": "ui-003 send money [Amount=\"0\"]: no API call; shows \"Enter an amount above 0.\""
+    },
+    {
+      "ms": 8398,
+      "level": "info",
+      "msg": "ui-004 send money [Amount=\"1.005\"]: no API call; shows \"Use at most 2 decimals.\""
+    },
+    {
+      "ms": 9466,
+      "level": "info",
+      "msg": "ui-005 send money [Amount=\"4.35\"]: POST /transfers → 400, GET /wallets/:id → 200; shows \"Check the amount and try again.\""
+    },
+    {
+      "ms": 10544,
+      "level": "info",
+      "msg": "ui-006 send money [Amount=\"205\"]: POST /transfers → 201, GET /wallets/:id → 200; shows \"Sent 205.00 USD to bob. Fee 1.03 USD.\""
+    },
+    {
+      "ms": 11600,
+      "level": "info",
+      "msg": "ui-007 send money [Amount=\"5000\"]: POST /transfers → 201, GET /wallets/:id → 200; shows \"Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.\""
+    },
+    {
+      "ms": 12633,
+      "level": "info",
+      "msg": "ui-008 send money [Amount=\"10000.01\"]: POST /transfers → 422, GET /wallets/:id → 200; shows \"Daily limit reached. You can still send 10,000.00 USD today.\""
+    },
+    {
+      "ms": 12646,
+      "level": "info",
+      "msg": "form \"send to EUR wallet\": 1 tries, each after a data reset and the fixtures"
+    },
+    {
+      "ms": 13719,
+      "level": "info",
+      "msg": "ui-009 send to EUR wallet: POST /transfers → 422, GET /wallets/:id → 200; shows \"Both wallets must use the same currency.\""
+    },
+    {
+      "ms": 13814,
+      "level": "info",
+      "msg": "stop target-ui"
+    },
+    {
+      "ms": 13824,
+      "level": "ok",
+      "msg": "linked 15 of 15 API calls from the browser to backend routes and SQL (1163 spans)"
+    }
+  ],
+  "summary": {
+    "screens": 2,
+    "templates": [
+      "/#/wallets",
+      "/#/send/:id"
+    ],
+    "interactions": 9,
+    "apiCalls": 15,
+    "linkedCalls": 15,
+    "spans": 1163
+  }
+}

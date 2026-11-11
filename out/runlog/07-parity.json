@@ -1,0 +1,500 @@
+{
+  "step": "parity",
+  "order": 7,
+  "n": "10",
+  "title": "Parity",
+  "does": "Replays journeys, probes and verified claims on the original and the rebuild from identical fresh states and diffs what clients see.",
+  "status": "ok",
+  "startedAt": "2026-11-11T11:33:23.112Z",
+  "ms": 60378,
+  "tools": [
+    {
+      "name": "Node child_process",
+      "purpose": "starts and stops the service under test",
+      "where": "pipeline/src/lib/proc.ts"
+    },
+    {
+      "name": "psql",
+      "purpose": "puts the database back to a known state before each run and each test",
+      "where": "reset.command in re.config.yaml"
+    },
+    {
+      "name": "Node fetch",
+      "purpose": "sends each request and records the response; adds a traceparent header so traces can be matched to it",
+      "where": "pipeline/src/lib/scenarios.ts"
+    },
+    {
+      "name": "Response differ",
+      "purpose": "masks ids and timestamps, then lists every field that differs between the two services",
+      "where": "pipeline/src/lib/match.ts (mask, diff)"
+    },
+    {
+      "name": "Playwright (Chrome)",
+      "purpose": "repeats every UI action on both services, compares what the person sees and which API calls happen, and takes screenshots side by side",
+      "where": "pipeline/src/steps/parity.ts + pipeline/src/lib/browser.ts",
+      "link": "https://playwright.dev"
+    }
+  ],
+  "inputs": [
+    {
+      "label": "Scenarios (journeys + probe plan)",
+      "path": "scenarios/demo.yaml",
+      "bytes": 1751,
+      "preview": "# Scenarios = ordinary user journeys. In the real setup these come from the Playwright crawler\n# or from recorded sessions; probing (see re.config.yaml) explores the edges automatically.\nfixtures:\n  - name: create wallet alice\n    request: { method: POST, path: /wallets, body: { owner: alice } }\n    save: { alice: body.id }\n  - name: create wallet bob\n    request: { method: POST, path: /wallets, body: { owner: bob } }\n    save: { bob: body.id }\n  - name: create EUR wallet carol\n    request: { method: POST, path: /wallets, body: { owner: carol, currency: EUR } }\n    save: { carol: body.id }\n  - name: fund alice\n    request: { method: POST, path: \"/wallets/{{alice}}/deposits\", body: { amount: 20000 } }\n\nflows:\n  - name: send money\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n    save: { t1: body.id }\n    probe: true\n  - name: retry the same request\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n  - name: view transfer\n    request: { method: GET, path: \"/transfers/{{t1}}\" }\n  - name: view sender wallet\n    request: { method: GET, path: \"/wallets/{{alice}}\" }\n  - name: view receiver wallet\n    request: { method: GET, path: \"/wallets/{{bob}}\" }\n  - name: send to EUR wallet\n    request:\n      method: POST\n      path: /transfers\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{carol}}\", amount: 50 }\n  - name: bob sends\n…"
+    },
+    {
+      "label": "UI form tries from the crawl",
+      "path": "out/ui/interactions.json",
+      "bytes": 11091,
+      "preview": "[\n  {\n    \"id\": \"ui-001\",\n    \"form\": \"send money\",\n    \"name\": \"send money\",\n    \"goto\": \"/#/send/{{alice}}\",\n    \"fill\": {\n      \"To\": \"bob\",\n      \"Amount\": \"100\"\n    },\n    \"click\": \"Send money\",\n    \"messages\": [\n      \"Sent 100.00 USD to bob. Fee 1.00 USD.\"\n    ],\n    \"screenText\": \"Back to wallets\\nSend money\\n\\nFrom alice: 19,899.00 USD available\\n\\nTo\\nbob (USD)\\ncarol (EUR)\\nAmount\\n\\nFee: 1.00 USD\\n\\nSend money\\nSent 100.00 USD to bob. Fee 1.00 USD.\",\n    \"calls\": [\n      {\n        \"method\": \"POST\",\n        \"path\": \"/transfers\",\n        \"status\": 201,\n        \"traceId\": \"25d237beae79ad53c802c25ba1cb4dd4\",\n        \"ms\": 23,\n        \"route\": \"/transfers\",\n        \"sql\": [\n          \"SELECT * FROM transfers WHERE idempotency_key = $1\",\n          \"BEGIN\",\n          \"SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE\",\n          \"SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'\",\n          \"INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)\",\n          \"UPDATE wallets SET balance = balance - $2 WHERE id = $1\",\n          \"UPDATE wallets SET balance = balance + $2 WHERE id = $1\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'tran\n…\n… 7 more items (9 total)"
+    },
+    {
+      "label": "Acceptance suite (verified probes)",
+      "path": "out/verify/suite.json",
+      "bytes": 22426,
+      "preview": "[\n  {\n    \"id\": \"wallets-F1\",\n    \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\"\n        }\n      },\n      \"expect\": {\n        \"status\": 201,\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"USD\",\n          \"balance\": \"0.00\",\n          \"held\": \"0.00\"\n        }\n      }\n    }\n  },\n  {\n    \"id\": \"wallets-F2\",\n    \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"GBP\"\n        }\n      },\n      \"expect\": {\n        \"status\": 400,\n        \"body\": {\n          \"error\": \"VALIDATION_ERROR\",\n          \"field\": \"currency\"\n        }\n      }\n    }\n  }\n]\n… 40 more items (42 total)"
+    },
+    {
+      "label": "Masked fields and accepted differences",
+      "preview": "ignore: id, createdAt, walletId, fromWalletId, toWalletId\naccepted: probe: send money [amount=4.35]; ui: send money [Amount=\"4.35\"]; claim ui-F14; claim ui-F13"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Parity report",
+      "path": "out/parity/report.md",
+      "bytes": 1114,
+      "preview": "# Parity report\n\n71 of 75 cases match, 4 accepted, 0 open (diff rate 0.0%).\n\n## Accepted differences (reviewed quirks)\n- probe: send money [amount=4.35]: Original rejects some valid amounts (4.35 * 100 is not exact in floating point). Rebuild accepts them on purpose.\n- claim ui-F13: The fee preview and the charged fee can disagree by a cent: for 205.00 the screen previews 1.02 but the API charges 1.03. The screen rounds 0.5% itself without the API's correction.: Original's fee preview can be a cent below the charge (205.00: 1.02 shown, 1.03 charged). Rebuild previews exactly what the API charges (decision for ui-U1).\n- claim ui-F14: A valid amount like 4.35 passes the screen's checks but the API rejects it, so the person sees the generic \"Check the amount and try again.\" This is the API's floating point bug showing through.: The claim describes the original's float bug through the screen. Not copied on purpose.\n- ui: send money [Amount=\"4.35\"]: Same quirk seen from the screen: the original shows \"Check the amount and try again.\" for 4.35. The rebuild sends it.\n\n## Open differences\nNo differences.\n"
+    },
+    {
+      "label": "Differences, formatted for the builder",
+      "path": "out/parity/diffs-for-builder.md",
+      "bytes": 1,
+      "preview": "\n"
+    },
+    {
+      "label": "Screenshots, original and rebuild",
+      "path": "out/parity/ui",
+      "bytes": 4096
+    }
+  ],
+  "lines": [
+    {
+      "ms": 5,
+      "level": "info",
+      "msg": "start parity-original: node demo-target/dist/server.js"
+    },
+    {
+      "ms": 225,
+      "level": "ok",
+      "msg": "parity-original answering on http://127.0.0.1:4001 after 220ms"
+    },
+    {
+      "ms": 226,
+      "level": "info",
+      "msg": "start parity-rebuilt: node rebuilt/dist/server.js"
+    },
+    {
+      "ms": 448,
+      "level": "ok",
+      "msg": "parity-rebuilt answering on http://127.0.0.1:4002 after 222ms"
+    },
+    {
+      "ms": 833,
+      "level": "ok",
+      "msg": "journey: create wallet alice: POST /wallets → original 201, rebuild 201"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: create wallet bob: POST /wallets → original 201, rebuild 201"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: create EUR wallet carol: POST /wallets → original 201, rebuild 201"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: fund alice: POST /wallets/:id/deposits → original 201, rebuild 201"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: send money: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: retry the same request: POST /transfers → original 200, rebuild 200"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: view transfer: GET /transfers/:id → original 200, rebuild 200"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: view sender wallet: GET /wallets/:id → original 200, rebuild 200"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: view receiver wallet: GET /wallets/:id → original 200, rebuild 200"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: send to EUR wallet: POST /transfers → original 422, rebuild 422"
+    },
+    {
+      "ms": 834,
+      "level": "ok",
+      "msg": "journey: bob sends more than he has: POST /transfers → original 409, rebuild 409"
+    },
+    {
+      "ms": 984,
+      "level": "ok",
+      "msg": "probe: send money [amount=0]: POST /transfers → original 400, rebuild 400"
+    },
+    {
+      "ms": 1140,
+      "level": "ok",
+      "msg": "probe: send money [amount=-5]: POST /transfers → original 400, rebuild 400"
+    },
+    {
+      "ms": 1278,
+      "level": "ok",
+      "msg": "probe: send money [amount=0.005]: POST /transfers → original 400, rebuild 400"
+    },
+    {
+      "ms": 1454,
+      "level": "ok",
+      "msg": "probe: send money [amount=1.5]: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 1619,
+      "level": "ok",
+      "msg": "probe: send money [amount=199.99]: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 1794,
+      "level": "ok",
+      "msg": "probe: send money [amount=4999.99]: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 1955,
+      "level": "ok",
+      "msg": "probe: send money [amount=5000]: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 2080,
+      "level": "ok",
+      "msg": "probe: send money [amount=10000]: POST /transfers → original 201, rebuild 201"
+    },
+    {
+      "ms": 2214,
+      "level": "ok",
+      "msg": "probe: send money [amount=10000.01]: POST /transfers → original 422, rebuild 422"
+    },
+    {
+      "ms": 2328,
+      "level": "ok",
+      "msg": "probe: send money [amount=\"100\"]: POST /transfers → original 400, rebuild 400"
+    },
+    {
+      "ms": 2461,
+      "level": "warn",
+      "msg": "probe: send money [amount=4.35]: POST /transfers → original 400, rebuild 201: 11 differences"
+    },
+    {
+      "ms": 2595,
+      "level": "ok",
+      "msg": "claim wallets-F1: original 201, rebuild 201"
+    },
+    {
+      "ms": 2729,
+      "level": "ok",
+      "msg": "claim wallets-F2: original 400, rebuild 400"
+    },
+    {
+      "ms": 2955,
+      "level": "ok",
+      "msg": "claim wallets-F3: original 400, rebuild 400"
+    },
+    {
+      "ms": 3094,
+      "level": "ok",
+      "msg": "claim wallets-F4: original 400, rebuild 400"
+    },
+    {
+      "ms": 3235,
+      "level": "ok",
+      "msg": "claim wallets-F5: original 201, rebuild 201"
+    },
+    {
+      "ms": 3405,
+      "level": "ok",
+      "msg": "claim wallets-F6: original 201, rebuild 201"
+    },
+    {
+      "ms": 3552,
+      "level": "ok",
+      "msg": "claim wallets-F7: original 400, rebuild 400"
+    },
+    {
+      "ms": 3715,
+      "level": "ok",
+      "msg": "claim wallets-F8: original 404, rebuild 404"
+    },
+    {
+      "ms": 3857,
+      "level": "ok",
+      "msg": "claim transfers-F1: original 201, rebuild 201"
+    },
+    {
+      "ms": 4026,
+      "level": "ok",
+      "msg": "claim transfers-F2: original 201, rebuild 201"
+    },
+    {
+      "ms": 4174,
+      "level": "ok",
+      "msg": "claim transfers-F3: original 201, rebuild 201"
+    },
+    {
+      "ms": 4331,
+      "level": "ok",
+      "msg": "claim transfers-F4: original 201, rebuild 201"
+    },
+    {
+      "ms": 4490,
+      "level": "ok",
+      "msg": "claim transfers-F5: original 200, rebuild 200"
+    },
+    {
+      "ms": 4657,
+      "level": "ok",
+      "msg": "claim transfers-F6: original 200, rebuild 200"
+    },
+    {
+      "ms": 4832,
+      "level": "ok",
+      "msg": "claim transfers-F7: original 200, rebuild 200"
+    },
+    {
+      "ms": 4976,
+      "level": "ok",
+      "msg": "claim transfers-F8: original 422, rebuild 422"
+    },
+    {
+      "ms": 5140,
+      "level": "ok",
+      "msg": "claim transfers-F9: original 422, rebuild 422"
+    },
+    {
+      "ms": 5273,
+      "level": "ok",
+      "msg": "claim transfers-F10: original 422, rebuild 422"
+    },
+    {
+      "ms": 5433,
+      "level": "ok",
+      "msg": "claim transfers-F11: original 409, rebuild 409"
+    },
+    {
+      "ms": 5602,
+      "level": "ok",
+      "msg": "claim transfers-F12: original 200, rebuild 200"
+    },
+    {
+      "ms": 5757,
+      "level": "ok",
+      "msg": "claim transfers-F13: original 200, rebuild 200"
+    },
+    {
+      "ms": 5920,
+      "level": "ok",
+      "msg": "claim transfers-F14: original 422, rebuild 422"
+    },
+    {
+      "ms": 6063,
+      "level": "ok",
+      "msg": "claim transfers-F15: original 400, rebuild 400"
+    },
+    {
+      "ms": 6210,
+      "level": "ok",
+      "msg": "claim transfers-F16: original 400, rebuild 400"
+    },
+    {
+      "ms": 6359,
+      "level": "ok",
+      "msg": "claim transfers-F17: original 400, rebuild 400"
+    },
+    {
+      "ms": 6483,
+      "level": "ok",
+      "msg": "claim transfers-F18: original 404, rebuild 404"
+    },
+    {
+      "ms": 6609,
+      "level": "ok",
+      "msg": "claim transfers-F19: original 404, rebuild 404"
+    },
+    {
+      "ms": 8279,
+      "level": "ok",
+      "msg": "claim ui-F1 in Chrome: open /#/wallets: same"
+    },
+    {
+      "ms": 8438,
+      "level": "ok",
+      "msg": "claim ui-F2: original 200, rebuild 200"
+    },
+    {
+      "ms": 10065,
+      "level": "ok",
+      "msg": "claim ui-F3 in Chrome: open /#/send/:id: same"
+    },
+    {
+      "ms": 11802,
+      "level": "ok",
+      "msg": "claim ui-F4 in Chrome: open /#/send/:id, Amount=\"3000\": same"
+    },
+    {
+      "ms": 13512,
+      "level": "ok",
+      "msg": "claim ui-F5 in Chrome: open /#/send/:id, Amount=\"50\": same"
+    },
+    {
+      "ms": 15599,
+      "level": "ok",
+      "msg": "claim ui-F6 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"0\", click Send money: same"
+    },
+    {
+      "ms": 17767,
+      "level": "ok",
+      "msg": "claim ui-F7 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"1.005\", click Send money: same"
+    },
+    {
+      "ms": 19972,
+      "level": "ok",
+      "msg": "claim ui-F8 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"100\", click Send money: same"
+    },
+    {
+      "ms": 22182,
+      "level": "ok",
+      "msg": "claim ui-F9 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"5000\", click Send money: same"
+    },
+    {
+      "ms": 24315,
+      "level": "ok",
+      "msg": "claim ui-F10 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"10000.01\", click Send money: same"
+    },
+    {
+      "ms": 26502,
+      "level": "ok",
+      "msg": "claim ui-F11 in Chrome: open /#/send/:id, To=\"carol\", Amount=\"50\", click Send money: same"
+    },
+    {
+      "ms": 28683,
+      "level": "ok",
+      "msg": "claim ui-F12 in Chrome: open /#/send/:id, To=\"alice\", Amount=\"10\", click Send money: same"
+    },
+    {
+      "ms": 30899,
+      "level": "warn",
+      "msg": "claim ui-F13 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"205\", click Send money: 1 differences"
+    },
+    {
+      "ms": 33047,
+      "level": "warn",
+      "msg": "claim ui-F14 in Chrome: open /#/send/:id, To=\"bob\", Amount=\"4.35\", click Send money: 3 differences"
+    },
+    {
+      "ms": 34676,
+      "level": "ok",
+      "msg": "claim ui-F15 in Chrome: open /#/send/00000000-0000-4000-8000-000000000000: same"
+    },
+    {
+      "ms": 36799,
+      "level": "ok",
+      "msg": "ui: send money: original \"Sent 100.00 USD to bob. Fee 1.00 USD.\", rebuild \"Sent 100.00 USD to bob. Fee 1.00 USD.\""
+    },
+    {
+      "ms": 38866,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"\"]: original \"Enter an amount above 0.\", rebuild \"Enter an amount above 0.\""
+    },
+    {
+      "ms": 40953,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"0\"]: original \"Enter an amount above 0.\", rebuild \"Enter an amount above 0.\""
+    },
+    {
+      "ms": 43115,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"1.005\"]: original \"Use at most 2 decimals.\", rebuild \"Use at most 2 decimals.\""
+    },
+    {
+      "ms": 45300,
+      "level": "warn",
+      "msg": "ui: send money [Amount=\"4.35\"]: original \"Check the amount and try again.\", rebuild \"Sent 4.35 USD to bob. Fee 1.00 USD.\": 2 differences"
+    },
+    {
+      "ms": 47502,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"205\"]: original \"Sent 205.00 USD to bob. Fee 1.03 USD.\", rebuild \"Sent 205.00 USD to bob. Fee 1.03 USD.\""
+    },
+    {
+      "ms": 49651,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"5000\"]: original \"Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.\", rebuild \"Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.\""
+    },
+    {
+      "ms": 51799,
+      "level": "ok",
+      "msg": "ui: send money [Amount=\"10000.01\"]: original \"Daily limit reached. You can still send 10,000.00 USD today.\", rebuild \"Daily limit reached. You can still send 10,000.00 USD today.\""
+    },
+    {
+      "ms": 53991,
+      "level": "ok",
+      "msg": "ui: send to EUR wallet: original \"Both wallets must use the same currency.\", rebuild \"Both wallets must use the same currency.\""
+    },
+    {
+      "ms": 57183,
+      "level": "ok",
+      "msg": "screen /#/wallets: heading, fields and buttons match; screenshots saved"
+    },
+    {
+      "ms": 60288,
+      "level": "ok",
+      "msg": "screen /#/send/{{alice}}: heading, fields and buttons match; screenshots saved"
+    },
+    {
+      "ms": 60361,
+      "level": "info",
+      "msg": "stop parity-original"
+    },
+    {
+      "ms": 60366,
+      "level": "info",
+      "msg": "stop parity-rebuilt"
+    },
+    {
+      "ms": 60378,
+      "level": "info",
+      "msg": "75 cases: 71 match, 4 accepted, 0 open"
+    }
+  ],
+  "summary": {
+    "total": 75,
+    "different": 0,
+    "accepted": 4,
+    "diffRate": "0.0%",
+    "firstDiffs": []
+  }
+}

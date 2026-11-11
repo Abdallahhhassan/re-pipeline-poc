@@ -109,6 +109,20 @@ details.rule[open] > summary { padding-bottom: 4px; }
 .test .line > span:first-child { color: var(--muted); }
 .test .based { color: var(--muted); font-size: 14px; }
 
+/* Screens: screenshots with what the crawl read from them. */
+.shot { display: block; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.shot img { display: block; width: 100%; height: auto; }
+.screen { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.screen dl { margin: 0; display: grid; grid-template-columns: 70px 1fr; gap: 4px 10px; font-size: 15px; }
+.screen dt { color: var(--muted); }
+.screen dd { margin: 0; overflow-wrap: anywhere; }
+.chain td:first-child { white-space: nowrap; }
+.chain .msg { max-width: 30ch; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.pair figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.pair figcaption { font-size: 14px; color: var(--muted); }
+.thumb { width: 220px; }
+
 /* Questions and rebuild check. */
 .questions { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 14px; }
 .questions li p { color: var(--muted); font-size: 15px; margin-top: 2px; }
@@ -136,6 +150,7 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   .step-body { padding-left: 0; }
   .test { padding-left: 0; }
   .test .line, .files { grid-template-columns: 1fr; }
+  .screen, .pair { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -146,7 +161,7 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
     <p class="when" id="when"></p>
     <p class="summary" id="summary"></p>
     <nav class="jump" aria-label="On this page">
-      <a href="#run">How the run went</a><a href="#rules">Rules it found</a><a href="#questions">Open questions</a><a href="#rebuild">Rebuild check</a><a href="#raw">Raw data</a>
+      <a href="#run">How the run went</a><a href="#screens" id="screensLink">The screens</a><a href="#rules">Rules it found</a><a href="#questions">Open questions</a><a href="#rebuild">Rebuild check</a><a href="#raw">Raw data</a>
     </nav>
   </header>
 
@@ -154,6 +169,15 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
     <h2>How the run went</h2>
     <p class="intro">Each step in order, with what it did, the tools it used, the files it read and wrote, and its log. Open a file name to see what is inside. What one step writes is what the next one reads.</p>
     <div class="rail" id="rail"></div>
+  </section>
+
+  <section id="screens">
+    <h2>The screens</h2>
+    <p class="intro" id="screensIntro"></p>
+    <div id="screenList" style="display:flex;flex-direction:column;gap:28px"></div>
+    <h3>What each try did</h3>
+    <p class="intro">One value changed per try, each on fresh data. Every API call carried a trace id, so it can be followed to the backend route and the SQL it ran.</p>
+    <div class="tablewrap"><table class="chain" id="chainTable"></table></div>
   </section>
 
   <section id="rules">
@@ -196,7 +220,9 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   const size = (b) => (b == null ? "" : b >= 1024 ? `${(b / 1024).toFixed(1)} KB` : `${b} ${b === 1 ? "byte" : "bytes"}`);
   const vars = (s) => esc(s).replace(/\{\{(\w+)\}\}/g, (_, v) => `<var>${v}'s id</var>`);
   const compact = (v) => JSON.stringify(v);
-  const caseLabel = (c) => String(c).replace(/^probe: /, "Variation: ").replace(/^journey: /, "Journey step: ").replace(/^claim [\w-]+: /, "Rule: ");
+  const caseLabel = (c) => String(c).replace(/^probe: /, "Variation: ").replace(/^journey: /, "Journey step: ").replace(/^claim [\w-]+: /, "Rule: ").replace(/^ui: /, "On the screen: ").replace(/^screen: /, "Screen ");
+  const shot = (src, alt, cls = "") => src ? `<a class="shot ${cls}" href="${esc(src)}"><img src="${esc(src)}" alt="${esc(alt)}" width="1100" height="720" loading="lazy"></a>` : "";
+  const ui = D.ui || { screens: [], tries: [] };
   const tidyPath = (p) => esc(p).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, "<var>id</var>");
 
   const results = D.results;
@@ -204,7 +230,8 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   const failed = results.filter((r) => r.probeResult === "fail");
   const untested = results.filter((r) => r.probeResult === "none");
   const par = D.parity;
-  const accepted = new Map((D.acceptedDifferences || []).map((a) => [a.case, a.reason]));
+  // An accepted entry names a case exactly, or by its prefix (e.g. "claim ui-F13").
+  const acceptedFor = (c) => (D.acceptedDifferences || []).find((a) => a.case === c || String(c).startsWith(a.case + ":"))?.reason;
 
   // Opening: what happened, in plain words.
   $("title").textContent = `What we learned about ${D.target}`;
@@ -212,8 +239,8 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   const when = new Date(D.generatedAt);
   $("when").textContent = `Run on ${when.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })} at ${when.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}. Rules written by ${D.analysisMode.startsWith("Claude") ? D.analysisMode : "hand from the generated prompts (no API key)"}.`;
   const parts = [
-    `The pipeline sent <strong>${D.recordings.length} requests</strong> to ${esc(D.target)}, wrote down <strong>${plural(results.length, "rule")}</strong> about how it behaves, and tested each one on a fresh copy.`,
-    `<strong>${confirmed.length}</strong> held up${failed.length ? `, <strong>${failed.length}</strong> turned out wrong` : ""}${untested.length ? ` and ${untested.length} could not be tested over HTTP` : ""}.`,
+    `The pipeline sent <strong>${D.recordings.length} requests</strong> to ${esc(D.target)}${ui.screens.length ? `, clicked through <strong>${plural(ui.screens.length, "screen")}</strong> in Chrome with ${plural(ui.tries.length, "form try", "form tries")}` : ""}, wrote down <strong>${plural(results.length, "rule")}</strong> about how it behaves, and tested each one on a fresh copy.`,
+    `<strong>${confirmed.length}</strong> held up${failed.length ? `, <strong>${failed.length}</strong> turned out wrong` : ""}${untested.length ? ` and ${untested.length} could not be tested from outside` : ""}.`,
     D.unknowns.length ? `${plural(D.unknowns.length, "question")} need someone who knows the product.` : "",
   ];
   if (par) {
@@ -232,8 +259,9 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   }
   const tell = {
     capture: (s) => `Started ${esc(D.target)} with tracing switched on and sent ${s.recordings} requests: ${s.byPhase.fixture || 0} to set up test data, ${s.byPhase.flow || 0} ordinary journey steps, and ${s.byPhase.probe || 0} variations of one input, each on fresh data. Tied ${s.spans ?? "the"} trace spans back to those requests, read ${s.tables ? plural(s.tables, "table") : "the schema"} from the database, and picked the ${plural(s.sourceFiles.length, "source file")} behind the routes it saw.`,
-    analyze: (s) => `Split the service into ${plural(Object.keys(s.areas).length, "area")} (${Object.keys(s.areas).map(esc).join(" and ")}) and turned each area's evidence into rules and open questions: ${s.findings} rules, ${s.unknowns} questions. ${s.mode === "api" ? "Claude wrote them through the API." : "With no API key, it wrote the prompts and used rules written from them by hand."}`,
-    verify: (s) => `Tested every rule on a fresh copy of the service: reset the data, set up the test wallets, then sent the rule's own test request. ${s.seen} passed, ${s.failedProbes.length} failed, ${plural(s.inferredOnly, "rule")} had no test. ${s.uncoveredRoutes.length ? `${plural(s.uncoveredRoutes.length, "route")} had no rule at all.` : "Every route it saw is covered by at least one rule."}`,
+    crawl: (s) => `Opened the app in Chrome and visited ${plural(s.screens, "screen")} (${s.templates.map(esc).join(" and ")}), then filled the forms ${s.interactions} times with one value changed each time, on fresh data. Traced ${s.linkedCalls} of ${s.apiCalls} API calls the page made to their backend route and SQL.`,
+    analyze: (s) => `Split the service into ${plural(Object.keys(s.areas).length, "area")} (${Object.keys(s.areas).map(esc).join(", ")}) and turned each area's evidence into rules and open questions: ${s.findings} rules, ${s.unknowns} questions. ${s.mode === "api" ? "Claude wrote them through the API." : "With no API key, it wrote the prompts and used rules written from them by hand."}`,
+    verify: (s) => `Tested every rule on a fresh copy of the service: reset the data, set up the test wallets, then ran the rule's own test (a request, or for screen rules, clicks in Chrome). ${s.seen} passed, ${s.failedProbes.length} failed, ${plural(s.inferredOnly, "rule")} had no test. ${s.uncoveredRoutes.length ? `${plural(s.uncoveredRoutes.length, "route")} had no rule at all.` : "Every route it saw is covered by at least one rule."}`,
     spec: (s) => `Combined the ${s.seen} confirmed rules with the request and response shapes seen in traffic into the spec a rebuild works from, plus a list of the ${s.unknowns} open questions.`,
     rebuild: () => esc(D.rebuildNote),
     parity: (s) => `Started the original and the rebuild side by side and ran the same ${s.total} checks on both, each from identical fresh data. ${s.total - s.different - (s.accepted || 0)} gave the same answer, ${s.accepted || 0} differed in a known way, ${s.different} need fixing.`,
@@ -254,9 +282,27 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
 
   // Rules, grouped by endpoint, in the order a client would meet them.
   $("rulesIntro").innerHTML = `Each rule is one sentence about how the service behaves. A check mark means its test passed on a fresh copy. Open a rule to see the test.`;
-  const order = (route) => ["POST /wallets", "GET /wallets/:id", "POST /wallets/:id/deposits", "POST /transfers", "GET /transfers/:id"].indexOf(route) + 1 || 99;
+  const order = (route) => route.startsWith("UI ") ? 200 : ["POST /wallets", "GET /wallets", "GET /wallets/:id", "POST /wallets/:id/deposits", "POST /transfers", "GET /transfers/:id"].indexOf(route) + 1 || 99;
   const routes = [...new Set(results.map((r) => r.route))].sort((a, b) => order(a) - order(b) || a.localeCompare(b));
+  const uiTestOf = (r) => {
+    const p = r.uiProbe, exp = p.expect || {};
+    const typed = Object.entries(p.fill || {}).map(([k, v]) => `<code>${esc(k)}</code> = <code>${esc(JSON.stringify(v))}</code>`).join(", ");
+    const want = [
+      ...[exp.text || []].flat().map((t) => `shows <q>${esc(t)}</q>`),
+      ...(exp.request ? [`calls <code>${vars(exp.request)}</code>`] : []),
+      ...(exp.noRequest ? [`does not call <code>${esc(exp.noRequest)}</code>`] : []),
+    ].join(", ");
+    const lines = [
+      `<div class="line"><span>Opened</span><span><code>${vars(p.goto)}</code> in Chrome</span></div>`,
+      ...(typed ? [`<div class="line"><span>Typed</span><span>${typed}</span></div>`] : []),
+      ...(p.click ? [`<div class="line"><span>Clicked</span><span>${esc(p.click)}</span></div>`] : []),
+      `<div class="line"><span>Expected</span><span>it ${want}</span></div>`,
+      `<div class="line"><span>Got</span><span>${r.probeResult === "pass" ? "exactly that" : `${esc((r.problems || []).join("; "))}${r.actual?.messages?.length ? `. The page said <q>${esc(r.actual.messages.join(" "))}</q>` : ""}`}</span></div>`,
+    ];
+    return `<div class="test">${lines.join("")}${shot(r.screenshot, `Screen after the test of ${r.id}`, "thumb")}<p class="based">Based on ${esc((r.evidence || []).join(", "))}</p></div>`;
+  };
   const testOf = (r) => {
+    if (r.uiProbe) return uiTestOf(r);
     if (!r.probe) return `<div class="test"><p>No test: this rule is about data the service does not show through its API.</p><p class="based">Based on ${esc((r.evidence || []).join(", "))}</p></div>`;
     const req = (q) => `<code>${esc(q.method)} ${vars(q.path)}</code>${q.body ? ` with <code>${vars(compact(q.body))}</code>` : ""}${q.headers && Object.keys(q.headers).length ? ` and header <code>${esc(Object.entries(q.headers).map(([k, v]) => `${k}: ${v}`).join(", "))}</code>` : ""}`;
     const exp = r.probe.expect;
@@ -271,9 +317,38 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   const markOf = (r) => r.probeResult === "pass" ? ["good", "✓", "confirmed"] : r.probeResult === "fail" ? ["bad", "✗", "test failed"] : ["warn", "?", "not tested"];
   $("ruleGroups").innerHTML = routes.map((route) => {
     const rs = results.filter((r) => r.route === route);
-    return `<div class="group"><div class="group-head"><code>${esc(route)}</code><span>${plural(rs.length, "rule")}</span></div>
+    const label = route.startsWith("UI ") ? `Screen <code>${esc(route.slice(3))}</code>` : `<code>${esc(route)}</code>`;
+    return `<div class="group"><div class="group-head">${label}<span>${plural(rs.length, "rule")}</span></div>
       ${rs.map((r) => { const [cls, mark, word] = markOf(r); return `<details class="rule"><summary><span class="mark ${cls}" aria-hidden="true">${mark}</span><span>${esc(r.claim)}</span><span class="status">${word}</span></summary>${testOf(r)}</details>`; }).join("")}</div>`;
   }).join("");
+
+  // The screens.
+  if (!ui.screens.length) {
+    $("screens").hidden = true;
+    $("screensLink").hidden = true;
+  } else {
+    $("screensIntro").textContent = `The pipeline opened the app in Chrome with Playwright, followed every link it could reach from the start page, and kept one example of each screen. For each one it read the fields, buttons and the API calls the screen made while loading.`;
+    const callText = (c) => `${c.method} ${c.route || c.path}`;
+    $("screenList").innerHTML = ui.screens.map((s) => `
+      <div class="screen">
+        ${shot(s.screenshot, `Screenshot of ${s.template}`)}
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h3><code>${esc(s.template)}</code>: ${esc(s.heading)}</h3>
+          <dl>
+            <dt>Fields</dt><dd>${s.fields.map((f) => `${esc(f.label)} <span class="intro">(${esc(f.kind)}${f.options ? `: ${esc(f.options.join(", "))}` : ""})</span>`).join("<br>") || "none"}</dd>
+            <dt>Buttons</dt><dd>${esc(s.buttons.join(", ")) || "none"}</dd>
+            <dt>Loads</dt><dd>${s.loadCalls.map((c) => `<code>${esc(callText(c))}</code> → ${c.status}`).join("<br>") || "nothing"}</dd>
+          </dl>
+          <details class="file"><summary>What the browser sees (accessibility tree)</summary><div class="viewer"><pre>${esc(s.structure.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, ":id"))}</pre></div></details>
+        </div>
+      </div>`).join("");
+    $("chainTable").innerHTML = `<thead><tr><th>Typed</th><th>The page said</th><th>API call</th><th>SQL it ran</th></tr></thead><tbody>${ui.tries.map((t) => {
+      const post = t.calls.filter((c) => c.method !== "GET");
+      const sql = post.flatMap((c) => c.sql).filter((q) => !/^(BEGIN|COMMIT|ROLLBACK)$/.test(q));
+      const typed = Object.entries(t.fill).map(([k, v]) => `${esc(k)}: <code>${esc(v === "" ? "(empty)" : v)}</code>`).join("<br>");
+      return `<tr><td>${typed}</td><td class="msg">${esc(t.messages.join(" ")) || "nothing"}</td><td>${post.map((c) => `<code>${esc(callText(c))}</code> → ${c.status}`).join("<br>") || `<span class="intro">none, the screen stopped it</span>`}</td><td>${sql.length ? `<details class="file"><summary>${plural(sql.length, "statement")}</summary><div class="viewer"><pre>${esc(sql.join("\n"))}</pre></div></details>` : "none"}</td></tr>`;
+    }).join("")}</tbody>`;
+  }
 
   // Open questions.
   $("questionList").innerHTML = D.unknowns.map((u) => `<li><strong>${esc(u.question)}</strong><p>${esc(u.why)}</p></li>`).join("") || "<li>None.</li>";
@@ -286,11 +361,15 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
     $("rebuildIntro").textContent = `The rebuild in rebuilt/ was written only from the spec, never from the original code. To compare them, the pipeline starts both on identical fresh data, sends the same requests, and compares what a client would see, ignoring ids and timestamps that differ on every run.`;
     const notSame = par.results.filter((r) => !r.same);
     $("rebuildNotes").innerHTML = notSame.length ? notSame.map((r) => {
-      const known = accepted.get(r.case);
-      return `<div class="callout${known ? "" : " bad"}"><strong>${esc(caseLabel(r.case))}</strong><p>${known ? `Known difference: ${esc(known)}` : "Needs fixing in the rebuild."}</p><p class="intro" style="font-size:14px">${esc(r.differences.slice(0, 4).join("; "))}${r.differences.length > 4 ? "; …" : ""}</p></div>`;
+      const known = acceptedFor(r.case);
+      const pics = r.shots ? `<div class="pair"><figure>${shot(r.shots.original, "Original")}<figcaption>Original</figcaption></figure><figure>${shot(r.shots.rebuild, "Rebuild")}<figcaption>Rebuild</figcaption></figure></div>` : "";
+      return `<div class="callout${known ? "" : " bad"}"><strong>${esc(caseLabel(r.case))}</strong><p>${known ? `Known difference: ${esc(known)}` : "Needs fixing in the rebuild."}</p><p class="intro" style="font-size:14px">${esc(r.differences.slice(0, 4).join("; "))}${r.differences.length > 4 ? "; …" : ""}</p>${pics}</div>`;
     }).join("") : `<div class="callout good"><strong>Every check gave the same answer on both.</strong></div>`;
+    // Same screens, two designs: the rebuild keeps the labels, buttons and messages, not the look.
+    const pairs = par.results.filter((r) => r.same && r.shots && String(r.case).startsWith("screen: "));
+    if (pairs.length) $("rebuildNotes").innerHTML += `<h3 style="margin-top:14px">Same screens, own design</h3><p class="intro">The rebuild keeps every address, label, button name and message the tests rely on. The layout is its own.</p>` + pairs.map((r) => `<div class="pair"><figure>${shot(r.shots.original, `Original ${r.request}`)}<figcaption>Original, <code>${tidyPath(r.case.replace(/^screen: /, ""))}</code></figcaption></figure><figure>${shot(r.shots.rebuild, `Rebuild ${r.request}`)}<figcaption>Rebuild</figcaption></figure></div>`).join("");
     $("allChecksLabel").textContent = `See all ${par.total} checks`;
-    $("checkTable").innerHTML = `<thead><tr><th>Check</th><th>Request</th><th>Result</th></tr></thead><tbody>${par.results.map((r) => `<tr><td>${esc(caseLabel(r.case))}</td><td><code>${tidyPath(r.request)}</code></td><td class="${r.same ? "same" : accepted.has(r.case) ? "expected" : "differs"}">${r.same ? "Same" : accepted.has(r.case) ? "Known difference" : "Different"}</td></tr>`).join("")}</tbody>`;
+    $("checkTable").innerHTML = `<thead><tr><th>Check</th><th>Request</th><th>Result</th></tr></thead><tbody>${par.results.map((r) => `<tr><td>${esc(caseLabel(r.case))}</td><td>${r.kind === "ui" ? esc(r.request) : `<code>${tidyPath(r.request)}</code>`}</td><td class="${r.same ? "same" : acceptedFor(r.case) ? "expected" : "differs"}">${r.same ? "Same" : acceptedFor(r.case) ? "Known difference" : "Different"}</td></tr>`).join("")}</tbody>`;
   }
 
   // Raw data.

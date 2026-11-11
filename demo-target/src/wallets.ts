@@ -30,6 +30,11 @@ wallets.post("/wallets", async (req, res) => {
   res.status(201).json(walletToJson(rows[0]));
 });
 
+wallets.get("/wallets", async (_req, res) => {
+  const { rows } = await pool.query("SELECT * FROM wallets ORDER BY created_at, id");
+  res.json(rows.map(walletToJson));
+});
+
 wallets.get("/wallets/:id", async (req, res) => {
   if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
   const { rows } = await pool.query("SELECT * FROM wallets WHERE id = $1", [req.params.id]);

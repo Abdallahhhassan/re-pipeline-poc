@@ -655,5 +655,254 @@
         }
       }
     }
+  },
+  {
+    "id": "ui-F1",
+    "claim": "The start screen lists every wallet with its owner, currency, balance and amount on hold, each with a Send money link. Money shows with thousands separators, two decimals and the currency code.",
+    "uiProbe": {
+      "goto": "/#/wallets",
+      "expect": {
+        "text": [
+          "alice",
+          "20,000.00 USD",
+          "carol",
+          "EUR"
+        ],
+        "request": "GET /wallets 200"
+      }
+    }
+  },
+  {
+    "id": "ui-F2",
+    "claim": "The wallets screen loads every wallet from GET /wallets, oldest first, in the same shape as GET /wallets/:id. No API scenario called this route; the browser crawl found it.",
+    "probe": {
+      "request": {
+        "method": "GET",
+        "path": "/wallets"
+      },
+      "expect": {
+        "status": 200,
+        "body": [
+          {
+            "owner": "alice",
+            "currency": "USD"
+          },
+          {
+            "owner": "bob",
+            "currency": "USD"
+          },
+          {
+            "owner": "carol",
+            "currency": "EUR"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "ui-F3",
+    "claim": "The send screen shows the sender's available balance and a form with To (every other wallet, as owner and currency) and Amount. It loads the sender and the wallet list.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "expect": {
+        "text": [
+          "From alice: 20,000.00 USD available",
+          "bob (USD)",
+          "carol (EUR)"
+        ],
+        "request": "GET /wallets/{{alice}} 200"
+      }
+    }
+  },
+  {
+    "id": "ui-F4",
+    "claim": "While the person types, the screen previews the fee itself (0.5%, never below 1.00) without calling the API.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "Amount": "3000"
+      },
+      "expect": {
+        "text": "Fee: 15.00 USD",
+        "noRequest": "POST /transfers"
+      }
+    }
+  },
+  {
+    "id": "ui-F5",
+    "claim": "The fee preview shows at least 1.00 for small amounts.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "Amount": "50"
+      },
+      "expect": {
+        "text": "Fee: 1.00 USD",
+        "noRequest": "POST /transfers"
+      }
+    }
+  },
+  {
+    "id": "ui-F6",
+    "claim": "An empty or zero amount is stopped by the screen with \"Enter an amount above 0.\" and nothing is sent to the API.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "0"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Enter an amount above 0.",
+        "noRequest": "POST /transfers"
+      }
+    }
+  },
+  {
+    "id": "ui-F7",
+    "claim": "An amount with more than 2 decimals is stopped by the screen with \"Use at most 2 decimals.\" and nothing is sent.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "1.005"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Use at most 2 decimals.",
+        "noRequest": "POST /transfers"
+      }
+    }
+  },
+  {
+    "id": "ui-F8",
+    "claim": "A normal send posts one transfer, shows \"Sent <amount> to <owner>. Fee <fee>.\" and refreshes the available balance (amount plus fee taken off).",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "100"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": [
+          "Sent 100.00 USD to bob. Fee 1.00 USD.",
+          "From alice: 19,899.00 USD available"
+        ],
+        "request": "POST /transfers 201"
+      }
+    }
+  },
+  {
+    "id": "ui-F9",
+    "claim": "From 5,000 the transfer is held: the screen says it is waiting for review and that the fee was charged.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "5000"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.",
+        "request": "POST /transfers 201"
+      }
+    }
+  },
+  {
+    "id": "ui-F10",
+    "claim": "Over the daily limit, the screen shows how much can still be sent today, using the remaining amount the API returns.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "10000.01"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Daily limit reached. You can still send 10,000.00 USD today.",
+        "request": "POST /transfers 422"
+      }
+    }
+  },
+  {
+    "id": "ui-F11",
+    "claim": "Sending to a wallet in another currency shows \"Both wallets must use the same currency.\" The screen lets the person pick it; only the API refuses.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "carol",
+        "Amount": "50"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Both wallets must use the same currency.",
+        "request": "POST /transfers 422"
+      }
+    }
+  },
+  {
+    "id": "ui-F12",
+    "claim": "When the balance cannot cover the amount plus the fee, the screen shows \"Not enough balance to cover the amount and the fee.\"",
+    "uiProbe": {
+      "goto": "/#/send/{{bob}}",
+      "fill": {
+        "To": "alice",
+        "Amount": "10"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Not enough balance to cover the amount and the fee.",
+        "request": "POST /transfers 409"
+      }
+    }
+  },
+  {
+    "id": "ui-F13",
+    "claim": "The fee preview and the charged fee can disagree by a cent: for 205.00 the screen previews 1.02 but the API charges 1.03. The screen rounds 0.5% itself without the API's correction.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "205"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": [
+          "Fee: 1.02 USD",
+          "Sent 205.00 USD to bob. Fee 1.03 USD."
+        ],
+        "request": "POST /transfers 201"
+      }
+    }
+  },
+  {
+    "id": "ui-F14",
+    "claim": "A valid amount like 4.35 passes the screen's checks but the API rejects it, so the person sees the generic \"Check the amount and try again.\" This is the API's floating point bug showing through.",
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "4.35"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Check the amount and try again.",
+        "request": "POST /transfers 400"
+      }
+    }
+  },
+  {
+    "id": "ui-F15",
+    "claim": "Opening the send screen for a wallet that does not exist shows \"Wallet not found\" with a link back.",
+    "uiProbe": {
+      "goto": "/#/send/00000000-0000-4000-8000-000000000000",
+      "expect": {
+        "text": [
+          "Wallet not found",
+          "Back to wallets"
+        ]
+      }
+    }
   }
 ]

@@ -11,6 +11,24 @@ export interface ServiceConfig {
   reset: { command: string };
 }
 
+/** A form the crawler fills in: base values, the button to press, and one field to vary. */
+export interface UiForm {
+  name: string;
+  goto: string;
+  fill?: Record<string, string>;
+  submit: string;
+  vary?: { field: string; values: string[] };
+}
+
+export interface UiConfig {
+  startPath: string;
+  maxScreens: number;
+  source?: { dir: string; extensions: string[] };
+  forms: UiForm[];
+  /** Screens to photograph on both the original and the rebuild, e.g. "/#/send/{{alice}}". */
+  compareScreens: string[];
+}
+
 export interface Config {
   root: string;
   outDir: string;
@@ -28,6 +46,7 @@ export interface Config {
   rebuilt?: ServiceConfig;
   parity: { ignoreFields: string[]; accepted: { case: string; reason: string }[] };
   site: { links: { label: string; href: string }[] };
+  ui?: UiConfig;
 }
 
 export function loadConfig(file = "re.config.yaml"): Config {
@@ -51,6 +70,15 @@ export function loadConfig(file = "re.config.yaml"): Config {
     rebuilt: raw.rebuilt,
     parity: { ignoreFields: [], accepted: [], ...raw.parity },
     site: { links: [], ...raw.site },
+    ui: raw.ui
+      ? {
+          maxScreens: 15,
+          forms: [],
+          compareScreens: [],
+          ...raw.ui,
+          source: raw.ui.source ? { extensions: [".js", ".html"], ...raw.ui.source, dir: path.resolve(root, raw.ui.source.dir) } : undefined,
+        }
+      : undefined,
   };
 }
 

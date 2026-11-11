@@ -3,6 +3,7 @@ import { Config, outPath, readJson, writeJson } from "../config";
 import { RequestTrace } from "../lib/evidence";
 import { Finding, Unknown } from "../lib/findings";
 import { Recording } from "../lib/scenarios";
+import type { Screen } from "./crawl";
 import { log } from "../lib/log";
 
 type Verified = Finding & { probeResult: "pass" | "fail" | "none" };
@@ -79,11 +80,35 @@ export async function spec(cfg: Config) {
       ...fs_.filter((f) => f.tag === "Seen").map(line),
       "",
       "**Not yet proven (Inferred)**",
-      ...(fs_.filter((f) => f.tag === "Inferred").map(line).concat(fs_.some((f) => f.tag === "Inferred") ? [] : ["- none"])),
+      ...(fs_.filter((f) => f.tag === "Inferred" && f.probeResult !== "fail").map(line).concat(fs_.some((f) => f.tag === "Inferred" && f.probeResult !== "fail") ? [] : ["- none"])),
+      ...(fs_.some((f) => f.probeResult === "fail")
+        ? ["", "**Refuted by its test (do not build)**", ...fs_.filter((f) => f.probeResult === "fail").map((f) => `- ~~${f.claim}~~ _(${f.id})_`)]
+        : []),
     ]
       .filter((l) => l !== undefined)
       .join("\n");
   });
+
+  // With a UI crawl, the builder also gets each screen's structure: labels, buttons and texts, not its code.
+  const screens: Screen[] = cfg.ui && fs.existsSync(outPath(cfg, "ui", "screens.json")) ? readJson<Screen[]>(outPath(cfg, "ui", "screens.json")) : [];
+  if (screens.length) log.input("Screens from the UI crawl", outPath(cfg, "ui", "screens.json"));
+  const screenSection = screens.length
+    ? [
+        "## Screens (from the browser crawl)",
+        "Rebuild these screens at the same addresses, with the same labels, button names and messages. The look is yours.",
+        "",
+        ...screens.map((s) =>
+          [
+            `### ${s.template}: ${s.heading}`,
+            `Loads: ${s.loadCalls.map((c) => `${c.method} ${c.route ?? c.path}`).join(", ") || "nothing"}`,
+            "```",
+            s.structure.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, ":id"),
+            "```",
+          ].join("\n"),
+        ),
+        "",
+      ].join("\n")
+    : "";
 
   const md = [
     `# Behavior spec: ${cfg.target.name}`,
@@ -93,6 +118,7 @@ export async function spec(cfg: Config) {
     "",
     sections.join("\n\n"),
     "",
+    screenSection,
     "## Unknowns (people decide before the build)",
     ...unknowns.map((u) => `- **${u.question}** ${u.why} _(${u.id})_`),
     "",

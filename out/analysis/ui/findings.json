@@ -1,0 +1,405 @@
+{
+  "findings": [
+    {
+      "id": "F1",
+      "route": "UI /#/wallets",
+      "kind": "screen",
+      "claim": "The start screen lists every wallet with its owner, currency, balance and amount on hold, each with a Send money link. Money shows with thousands separators, two decimals and the currency code.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:screen-01",
+        "src:demo-target/public/app.js:19",
+        "src:demo-target/public/app.js:27"
+      ],
+      "uiProbe": {
+        "goto": "/#/wallets",
+        "expect": {
+          "text": [
+            "alice",
+            "20,000.00 USD",
+            "carol",
+            "EUR"
+          ],
+          "request": "GET /wallets 200"
+        }
+      }
+    },
+    {
+      "id": "F2",
+      "route": "GET /wallets",
+      "kind": "contract",
+      "claim": "The wallets screen loads every wallet from GET /wallets, oldest first, in the same shape as GET /wallets/:id. No API scenario called this route; the browser crawl found it.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:screen-01",
+        "src:demo-target/src/wallets.ts:33"
+      ],
+      "probe": {
+        "request": {
+          "method": "GET",
+          "path": "/wallets"
+        },
+        "expect": {
+          "status": 200,
+          "body": [
+            {
+              "owner": "alice",
+              "currency": "USD"
+            },
+            {
+              "owner": "bob",
+              "currency": "USD"
+            },
+            {
+              "owner": "carol",
+              "currency": "EUR"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "F3",
+      "route": "UI /#/send/:id",
+      "kind": "screen",
+      "claim": "The send screen shows the sender's available balance and a form with To (every other wallet, as owner and currency) and Amount. It loads the sender and the wallet list.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:screen-02",
+        "src:demo-target/public/app.js:41",
+        "src:demo-target/public/app.js:44"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "expect": {
+          "text": [
+            "From alice: 20,000.00 USD available",
+            "bob (USD)",
+            "carol (EUR)"
+          ],
+          "request": "GET /wallets/{{alice}} 200"
+        }
+      }
+    },
+    {
+      "id": "F4",
+      "route": "UI /#/send/:id",
+      "kind": "rule",
+      "claim": "While the person types, the screen previews the fee itself (0.5%, never below 1.00) without calling the API.",
+      "tag": "Seen",
+      "evidence": [
+        "src:demo-target/public/app.js:17",
+        "src:demo-target/public/app.js:65"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "Amount": "3000"
+        },
+        "expect": {
+          "text": "Fee: 15.00 USD",
+          "noRequest": "POST /transfers"
+        }
+      }
+    },
+    {
+      "id": "F5",
+      "route": "UI /#/send/:id",
+      "kind": "rule",
+      "claim": "The fee preview shows at least 1.00 for small amounts.",
+      "tag": "Seen",
+      "evidence": [
+        "src:demo-target/public/app.js:17"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "Amount": "50"
+        },
+        "expect": {
+          "text": "Fee: 1.00 USD",
+          "noRequest": "POST /transfers"
+        }
+      }
+    },
+    {
+      "id": "F6",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "An empty or zero amount is stopped by the screen with \"Enter an amount above 0.\" and nothing is sent to the API.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-002",
+        "ui:ui-003",
+        "src:demo-target/public/app.js:71"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "0"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Enter an amount above 0.",
+          "noRequest": "POST /transfers"
+        }
+      }
+    },
+    {
+      "id": "F7",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "An amount with more than 2 decimals is stopped by the screen with \"Use at most 2 decimals.\" and nothing is sent.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-004",
+        "src:demo-target/public/app.js:72"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "1.005"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Use at most 2 decimals.",
+          "noRequest": "POST /transfers"
+        }
+      }
+    },
+    {
+      "id": "F8",
+      "route": "UI /#/send/:id",
+      "kind": "flow",
+      "claim": "A normal send posts one transfer, shows \"Sent <amount> to <owner>. Fee <fee>.\" and refreshes the available balance (amount plus fee taken off).",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-001",
+        "src:demo-target/public/app.js:84",
+        "src:demo-target/public/app.js:99"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "100"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": [
+            "Sent 100.00 USD to bob. Fee 1.00 USD.",
+            "From alice: 19,899.00 USD available"
+          ],
+          "request": "POST /transfers 201"
+        }
+      }
+    },
+    {
+      "id": "F9",
+      "route": "UI /#/send/:id",
+      "kind": "flow",
+      "claim": "From 5,000 the transfer is held: the screen says it is waiting for review and that the fee was charged.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-007",
+        "src:demo-target/public/app.js:86"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "5000"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.",
+          "request": "POST /transfers 201"
+        }
+      }
+    },
+    {
+      "id": "F10",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "Over the daily limit, the screen shows how much can still be sent today, using the remaining amount the API returns.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-008",
+        "src:demo-target/public/app.js:88"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "10000.01"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Daily limit reached. You can still send 10,000.00 USD today.",
+          "request": "POST /transfers 422"
+        }
+      }
+    },
+    {
+      "id": "F11",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "Sending to a wallet in another currency shows \"Both wallets must use the same currency.\" The screen lets the person pick it; only the API refuses.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-009",
+        "src:demo-target/public/app.js:92"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "carol",
+          "Amount": "50"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Both wallets must use the same currency.",
+          "request": "POST /transfers 422"
+        }
+      }
+    },
+    {
+      "id": "F12",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "When the balance cannot cover the amount plus the fee, the screen shows \"Not enough balance to cover the amount and the fee.\"",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/public/app.js:90",
+        "src:demo-target/src/transfers.ts:52"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{bob}}",
+        "fill": {
+          "To": "alice",
+          "Amount": "10"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Not enough balance to cover the amount and the fee.",
+          "request": "POST /transfers 409"
+        }
+      }
+    },
+    {
+      "id": "F13",
+      "route": "UI /#/send/:id",
+      "kind": "rule",
+      "claim": "The fee preview and the charged fee can disagree by a cent: for 205.00 the screen previews 1.02 but the API charges 1.03. The screen rounds 0.5% itself without the API's correction.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-006",
+        "src:demo-target/public/app.js:17",
+        "src:demo-target/src/policy.ts:10"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "205"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": [
+            "Fee: 1.02 USD",
+            "Sent 205.00 USD to bob. Fee 1.03 USD."
+          ],
+          "request": "POST /transfers 201"
+        }
+      }
+    },
+    {
+      "id": "F14",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "A valid amount like 4.35 passes the screen's checks but the API rejects it, so the person sees the generic \"Check the amount and try again.\" This is the API's floating point bug showing through.",
+      "tag": "Seen",
+      "evidence": [
+        "ui:ui-005",
+        "src:demo-target/public/app.js:94",
+        "src:demo-target/src/errors.ts:19"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "4.35"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Check the amount and try again.",
+          "request": "POST /transfers 400"
+        }
+      }
+    },
+    {
+      "id": "F15",
+      "route": "UI /#/send/:id",
+      "kind": "error",
+      "claim": "Opening the send screen for a wallet that does not exist shows \"Wallet not found\" with a link back.",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/public/app.js:38"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/00000000-0000-4000-8000-000000000000",
+        "expect": {
+          "text": [
+            "Wallet not found",
+            "Back to wallets"
+          ]
+        }
+      }
+    },
+    {
+      "id": "F16",
+      "route": "UI /#/send/:id",
+      "kind": "rule",
+      "claim": "The amount field accepts thousands separators, the same way the screen shows money (\"1,000\" sends 1,000.00).",
+      "tag": "Inferred",
+      "evidence": [
+        "ui:screen-02",
+        "src:demo-target/public/app.js:4"
+      ],
+      "uiProbe": {
+        "goto": "/#/send/{{alice}}",
+        "fill": {
+          "To": "bob",
+          "Amount": "1,000"
+        },
+        "click": "Send money",
+        "expect": {
+          "text": "Sent 1,000.00 USD to bob.",
+          "request": "POST /transfers 201"
+        }
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U1",
+      "question": "Which fee is right when the preview and the charge disagree (205.00: 1.02 shown, 1.03 charged)? Should the screen ask the API for the fee instead of computing it?",
+      "why": "The screen has its own copy of the fee rule with different rounding. Customers see one number and pay another.",
+      "evidence": [
+        "ui:ui-006",
+        "src:demo-target/public/app.js:17",
+        "src:demo-target/src/policy.ts:10"
+      ]
+    },
+    {
+      "id": "U2",
+      "question": "Should a retry after a failed or lost response reuse the same Idempotency-Key?",
+      "why": "The screen makes a new key on every click, so retrying after a timeout could send the money twice.",
+      "evidence": [
+        "src:demo-target/public/app.js:80"
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@
   "model": "claude-sonnet-5-5",
   "areas": {
     "wallets": "using existing findings.json",
-    "transfers": "using existing findings.json"
+    "transfers": "using existing findings.json",
+    "ui": "using existing findings.json"
   }
 }

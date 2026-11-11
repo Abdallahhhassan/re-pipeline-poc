@@ -2,3 +2,8 @@ node_modules/
 dist/
 out/logs/
 out/capture/spans.jsonl
+out/ui/spans.jsonl
+# Screenshots are regenerated every run; the page keeps the ones it shows in site/img/.
+out/ui/screens/
+out/verify/ui/
+out/parity/ui/

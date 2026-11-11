@@ -44,5 +44,25 @@
       "src:demo-target/src/transfers.ts:24-33"
     ],
     "area": "transfers"
+  },
+  {
+    "id": "ui-U1",
+    "question": "Which fee is right when the preview and the charge disagree (205.00: 1.02 shown, 1.03 charged)? Should the screen ask the API for the fee instead of computing it?",
+    "why": "The screen has its own copy of the fee rule with different rounding. Customers see one number and pay another.",
+    "evidence": [
+      "ui:ui-006",
+      "src:demo-target/public/app.js:17",
+      "src:demo-target/src/policy.ts:10"
+    ],
+    "area": "ui"
+  },
+  {
+    "id": "ui-U2",
+    "question": "Should a retry after a failed or lost response reuse the same Idempotency-Key?",
+    "why": "The screen makes a new key on every click, so retrying after a timeout could send the money twice.",
+    "evidence": [
+      "src:demo-target/public/app.js:80"
+    ],
+    "area": "ui"
   }
 ]

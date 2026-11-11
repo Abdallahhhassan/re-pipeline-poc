@@ -47,6 +47,10 @@ export const accounts = {
     );
     return rows[0];
   },
+  async all() {
+    const { rows } = await db.query<Account>("SELECT * FROM accounts ORDER BY created_at, id");
+    return rows;
+  },
   async find(id: string, tx: Db = db) {
     const { rows } = await tx.query<Account>("SELECT * FROM accounts WHERE id = $1", [id]);
     return rows[0];

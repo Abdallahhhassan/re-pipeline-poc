@@ -33,6 +33,11 @@ routes.post("/wallets", async (req, res) => {
   res.status(201).json(showAccount(await accounts.create(owner, currency)));
 });
 
+// Found by the browser crawl: the wallets screen lists everything, oldest first.
+routes.get("/wallets", async (_req, res) => {
+  res.json((await accounts.all()).map(showAccount));
+});
+
 routes.get("/wallets/:id", async (req, res) => {
   const account = looksLikeId(req.params.id) ? await accounts.find(req.params.id) : undefined;
   if (!account) throw new Fail(404, "WALLET_NOT_FOUND");

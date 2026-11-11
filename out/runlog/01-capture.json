@@ -5,8 +5,8 @@
   "title": "Capture",
   "does": "Starts the target in the sandbox with tracing injected, runs the scenarios, probes one field at a time from a fresh state, then reads the schema and the source behind the routes. No AI.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:51:18.227Z",
-  "ms": 1979,
+  "startedAt": "2026-11-11T11:32:49.914Z",
+  "ms": 1469,
   "tools": [
     {
       "name": "psql",
@@ -50,7 +50,7 @@
     {
       "label": "Config: target",
       "path": "re.config.yaml",
-      "bytes": 2280,
+      "bytes": 3600,
       "preview": "# One file describes the system under analysis. Point it at the real system when access lands.\nout: out\n\ntarget:\n  name: demo-wallet\n  baseUrl: http://127.0.0.1:4001\n  start:\n    command: node demo-target/dist/server.js\n    env:\n      PORT: \"4001\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_demo\n  # node-auto injects OpenTelemetry into a Node process with no code changes.\n  tracing: node-auto\n  # Sandbox only: puts the data back to a known state before each run and probe.\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql 2>/dev/null\n  database:\n    url: postgres://postgres@127.0.0.1:5432/re_demo\n  source:\n    dir: demo-target/src\n    extensions: [.ts, .js]\n\nscenarios: scenarios/demo.yaml\n\n# Controlled probing: on steps marked `probe: true`, try each value for each field, one at a time.\nprobes:\n  fields: [amount]\n  # 4.35 is a float trap: 4.35 * 100 is 434.99999999999994 in JavaScript.\n  values: [0, -5, 0.005, 1.5, 199.99, 4999.99, 5000, 10000, 10000.01, \"100\", 4.35]\n  dropHeaders: [Idempotency-Key]\n\nanalysis:\n  model: claude-sonnet-5-5\n  maxTokens: 16000\n\nrebuild:\n  dir: rebuilt\n  model: claude-sonnet-5-5\n\n# The rebuilt service, started the same way for verification and parity.\nrebuilt:\n  baseUrl: http://127.0.0.1:4002\n  start:\n    command: node rebuilt/dist/server.js\n    env:\n      PORT: \"4002\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_rebuilt\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_rebuilt -q -f rebuilt/schema.sql 2>/dev/null\n\nparity:\n  # Values that differ on every run\n…"
     },
     {
@@ -68,14 +68,14 @@
     {
       "label": "Recorded requests and responses",
       "path": "out/capture/recordings.json",
-      "bytes": 17185,
-      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.227Z\"\n      }\n    },\n    \"traceId\": \"d2e5f379c37c363edd299b001b427423\",\n    \"ms\": 24\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.235Z\"\n      }\n    },\n    \"traceId\": \"7aba10d8763b94383920624def3f172e\",\n    \"ms\": 4\n  }\n]\n… 20 more items (22 total)"
+      "bytes": 17186,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"492e1500-f602-458e-8480-b98f00ed53a3\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.435Z\"\n      }\n    },\n    \"traceId\": \"8675dfd587aa3d4ceee277c560c36e56\",\n    \"ms\": 29\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"6b5514c9-448c-44e4-8953-1caa040a6985\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.451Z\"\n      }\n    },\n    \"traceId\": \"5c7c10b843068ff4862bb9bf8722379d\",\n    \"ms\": 7\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Route and SQL per request (from traces)",
       "path": "out/capture/traces.json",
       "bytes": 16984,
-      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 11,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 10,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
+      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 13,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 12,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Database schema",
@@ -86,173 +86,173 @@
     {
       "label": "Source files behind the routes, with line numbers",
       "path": "out/capture/code-slice.md",
-      "bytes": 9558,
+      "bytes": 9762,
       "preview": "### demo-target/src/db.ts\n```\n   1  import { Pool, PoolClient } from \"pg\";\n   2  \n   3  export const pool = new Pool({ connectionString: process.env.DATABASE_URL });\n   4  \n   5  export async function inTx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {\n   6    const client = await pool.connect();\n   7    try {\n   8      await client.query(\"BEGIN\");\n   9      const result = await fn(client);\n  10      await client.query(\"COMMIT\");\n  11      return result;\n  12    } catch (err) {\n  13      await client.query(\"ROLLBACK\");\n  14      throw err;\n  15    } finally {\n  16      client.release();\n  17    }\n  18  }\n  19  \n```\n\n### demo-target/src/errors.ts\n```\n   1  export class ApiError extends Error {\n   2    constructor(\n   3      public status: number,\n   4      public code: string,\n   5      public extra: Record<string, unknown> = {},\n   6    ) {\n   7      super(code);\n   8    }\n   9  }\n  10  \n  11  export const isUuid = (v: unknown): v is string =>\n  12    typeof v === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);\n  13  \n  14  /** Money arrives as a JSON number with at most 2 decimals. */\n  15  export function parseAmount(value: unknown, field = \"amount\"): number {\n  16    if (typeof value !== \"number\" || !Number.isFinite(value) || value <= 0) {\n  17      throw new ApiError(400, \"VALIDATION_ERROR\", { field });\n  18    }\n  19    if (Math.round(value * 100) !== value * 100) {\n  20      throw new ApiError(400, \"VALIDATION_ERROR\", { field, reason: \"max 2 decimals\" });\n  21    }\n  22    return value;\n  23  }\n  24  \n```\n\n### demo-target/sr\n…"
     }
   ],
   "lines": [
     {
-      "ms": 4,
+      "ms": 6,
       "level": "info",
       "msg": "reset data: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql"
     },
     {
-      "ms": 120,
+      "ms": 79,
       "level": "info",
       "msg": "start target: node demo-target/dist/server.js with OpenTelemetry injected (NODE_OPTIONS=--require register.cjs)"
     },
     {
-      "ms": 981,
+      "ms": 503,
       "level": "ok",
-      "msg": "target answering on http://127.0.0.1:4001 after 861ms"
+      "msg": "target answering on http://127.0.0.1:4001 after 424ms"
     },
     {
-      "ms": 981,
+      "ms": 503,
       "level": "info",
       "msg": "run 4 fixtures (test data setup)"
     },
     {
-      "ms": 1006,
+      "ms": 532,
       "level": "info",
-      "msg": "fixture-001 create wallet alice: POST /wallets → 201 (24ms)"
+      "msg": "fixture-001 create wallet alice: POST /wallets → 201 (29ms)"
     },
     {
-      "ms": 1010,
+      "ms": 539,
       "level": "info",
-      "msg": "fixture-002 create wallet bob: POST /wallets → 201 (4ms)"
+      "msg": "fixture-002 create wallet bob: POST /wallets → 201 (7ms)"
     },
     {
-      "ms": 1015,
+      "ms": 545,
       "level": "info",
-      "msg": "fixture-003 create EUR wallet carol: POST /wallets → 201 (5ms)"
+      "msg": "fixture-003 create EUR wallet carol: POST /wallets → 201 (6ms)"
     },
     {
-      "ms": 1026,
+      "ms": 553,
       "level": "info",
-      "msg": "fixture-004 fund alice: POST /wallets/ff81d856-5253-4813-96e0-3977abbc025d/deposits → 201 (11ms)"
+      "msg": "fixture-004 fund alice: POST /wallets/492e1500-f602-458e-8480-b98f00ed53a3/deposits → 201 (8ms)"
     },
     {
-      "ms": 1026,
+      "ms": 553,
       "level": "info",
       "msg": "run 7 journey steps"
     },
     {
-      "ms": 1041,
+      "ms": 565,
       "level": "info",
-      "msg": "flow-005 send money: POST /transfers → 201 (15ms)"
+      "msg": "flow-005 send money: POST /transfers → 201 (12ms)"
     },
     {
-      "ms": 1046,
+      "ms": 570,
       "level": "info",
-      "msg": "flow-006 retry the same request: POST /transfers → 200 (5ms)"
+      "msg": "flow-006 retry the same request: POST /transfers → 200 (4ms)"
     },
     {
-      "ms": 1054,
+      "ms": 575,
       "level": "info",
-      "msg": "flow-007 view transfer: GET /transfers/5848fde8-94a0-4478-a209-7b68985de2fc → 200 (8ms)"
+      "msg": "flow-007 view transfer: GET /transfers/f78954d3-521a-46ae-ac50-baebdc2ec1fc → 200 (5ms)"
     },
     {
-      "ms": 1058,
+      "ms": 579,
       "level": "info",
-      "msg": "flow-008 view sender wallet: GET /wallets/ff81d856-5253-4813-96e0-3977abbc025d → 200 (4ms)"
+      "msg": "flow-008 view sender wallet: GET /wallets/492e1500-f602-458e-8480-b98f00ed53a3 → 200 (4ms)"
     },
     {
-      "ms": 1062,
+      "ms": 583,
       "level": "info",
-      "msg": "flow-009 view receiver wallet: GET /wallets/33e8e107-ba17-49eb-a3a0-8188ec4eb983 → 200 (4ms)"
+      "msg": "flow-009 view receiver wallet: GET /wallets/6b5514c9-448c-44e4-8953-1caa040a6985 → 200 (4ms)"
     },
     {
-      "ms": 1069,
+      "ms": 589,
       "level": "info",
-      "msg": "flow-010 send to EUR wallet: POST /transfers → 422 (7ms)"
+      "msg": "flow-010 send to EUR wallet: POST /transfers → 422 (6ms)"
     },
     {
-      "ms": 1075,
+      "ms": 594,
       "level": "info",
-      "msg": "flow-011 bob sends more than he has: POST /transfers → 409 (6ms)"
+      "msg": "flow-011 bob sends more than he has: POST /transfers → 409 (4ms)"
     },
     {
-      "ms": 1075,
+      "ms": 594,
       "level": "info",
       "msg": "probe: 11 variations, each after a data reset and the 4 fixtures"
     },
     {
-      "ms": 1155,
+      "ms": 670,
       "level": "info",
       "msg": "probe-016 send money [amount=0]: POST /transfers → 400 (3ms)"
     },
     {
-      "ms": 1233,
+      "ms": 746,
       "level": "info",
       "msg": "probe-021 send money [amount=-5]: POST /transfers → 400 (2ms)"
     },
     {
-      "ms": 1314,
+      "ms": 816,
       "level": "info",
       "msg": "probe-026 send money [amount=0.005]: POST /transfers → 400 (3ms)"
     },
     {
-      "ms": 1402,
+      "ms": 896,
       "level": "info",
       "msg": "probe-031 send money [amount=1.5]: POST /transfers → 201 (9ms)"
     },
     {
-      "ms": 1480,
+      "ms": 972,
       "level": "info",
-      "msg": "probe-036 send money [amount=199.99]: POST /transfers → 201 (9ms)"
+      "msg": "probe-036 send money [amount=199.99]: POST /transfers → 201 (10ms)"
     },
     {
-      "ms": 1550,
+      "ms": 1050,
       "level": "info",
-      "msg": "probe-041 send money [amount=4999.99]: POST /transfers → 201 (7ms)"
+      "msg": "probe-041 send money [amount=4999.99]: POST /transfers → 201 (14ms)"
     },
     {
-      "ms": 1622,
+      "ms": 1140,
       "level": "info",
-      "msg": "probe-046 send money [amount=5000]: POST /transfers → 201 (6ms)"
+      "msg": "probe-046 send money [amount=5000]: POST /transfers → 201 (7ms)"
     },
     {
-      "ms": 1688,
+      "ms": 1215,
       "level": "info",
       "msg": "probe-051 send money [amount=10000]: POST /transfers → 201 (7ms)"
     },
     {
-      "ms": 1758,
+      "ms": 1287,
       "level": "info",
-      "msg": "probe-056 send money [amount=10000.01]: POST /transfers → 422 (4ms)"
+      "msg": "probe-056 send money [amount=10000.01]: POST /transfers → 422 (6ms)"
     },
     {
-      "ms": 1837,
+      "ms": 1362,
       "level": "info",
       "msg": "probe-061 send money [amount=\"100\"]: POST /transfers → 400 (3ms)"
     },
     {
-      "ms": 1932,
+      "ms": 1435,
       "level": "info",
-      "msg": "probe-066 send money [amount=4.35]: POST /transfers → 400 (3ms)"
+      "msg": "probe-066 send money [amount=4.35]: POST /transfers → 400 (7ms)"
     },
     {
-      "ms": 1932,
+      "ms": 1435,
       "level": "info",
       "msg": "stop target"
     },
     {
-      "ms": 1946,
+      "ms": 1446,
       "level": "ok",
-      "msg": "linked 791 spans to 22 of 22 requests through their traceparent ids"
+      "msg": "linked 918 spans to 22 of 22 requests through their traceparent ids"
     },
     {
-      "ms": 1947,
+      "ms": 1447,
       "level": "info",
       "msg": "routes seen: /wallets, /wallets/:id/deposits, /transfers, /transfers/:id, /wallets/:id"
     },
     {
-      "ms": 1975,
+      "ms": 1465,
       "level": "ok",
       "msg": "schema read from the live database: 3 tables"
     },
     {
-      "ms": 1978,
+      "ms": 1469,
       "level": "ok",
       "msg": "source slice: 5 files behind those routes (db.ts, errors.ts, policy.ts, transfers.ts, wallets.ts)"
     }
@@ -272,7 +272,7 @@
       "422": 2
     },
     "tracedRequests": 22,
-    "spans": 791,
+    "spans": 918,
     "tables": 3,
     "routes": [
       "/wallets",

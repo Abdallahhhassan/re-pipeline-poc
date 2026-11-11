@@ -55,6 +55,35 @@ parity:
   accepted:
     - case: "probe: send money [amount=4.35]"
       reason: "Original rejects some valid amounts (4.35 * 100 is not exact in floating point). Rebuild accepts them on purpose."
+    - case: 'ui: send money [Amount="4.35"]'
+      reason: "Same quirk seen from the screen: the original shows \"Check the amount and try again.\" for 4.35. The rebuild sends it."
+    - case: "claim ui-F14"
+      reason: "The claim describes the original's float bug through the screen. Not copied on purpose."
+    - case: "claim ui-F13"
+      reason: "Original's fee preview can be a cent below the charge (205.00: 1.02 shown, 1.03 charged). Rebuild previews exactly what the API charges (decision for ui-U1)."
+
+# The app's screens, explored in a real browser (Playwright). Remove this section for API-only systems.
+ui:
+  startPath: /#/wallets
+  maxScreens: 15
+  source:
+    dir: demo-target/public
+    extensions: [.js, .html]
+  # Forms are filled by their visible labels and sent with the named button, from fresh data each time.
+  forms:
+    - name: send money
+      goto: "/#/send/{{alice}}"
+      fill: { To: bob, Amount: "100" }
+      submit: Send money
+      vary:
+        field: Amount
+        values: ["", "0", "1.005", "4.35", "205", "5000", "10000.01"]
+    - name: send to EUR wallet
+      goto: "/#/send/{{alice}}"
+      fill: { To: carol, Amount: "50" }
+      submit: Send money
+  # Screens photographed on the original and the rebuild, side by side.
+  compareScreens: ["/#/wallets", "/#/send/{{alice}}"]
 
 # Links shown in the footer of the results page (site/index.html).
 site:

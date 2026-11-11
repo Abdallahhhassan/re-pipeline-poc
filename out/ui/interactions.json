@@ -1,0 +1,316 @@
+[
+  {
+    "id": "ui-001",
+    "form": "send money",
+    "name": "send money",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "100"
+    },
+    "click": "Send money",
+    "messages": [
+      "Sent 100.00 USD to bob. Fee 1.00 USD."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 19,899.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nSent 100.00 USD to bob. Fee 1.00 USD.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 201,
+        "traceId": "25d237beae79ad53c802c25ba1cb4dd4",
+        "ms": 23,
+        "route": "/transfers",
+        "sql": [
+          "SELECT * FROM transfers WHERE idempotency_key = $1",
+          "BEGIN",
+          "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+          "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
+          "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
+          "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
+          "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
+          "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
+          "COMMIT"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/276fda16-b095-47a0-8d60-292bdee9369e",
+        "status": 200,
+        "traceId": "1097f5f1b5a535577269d70614c9f119",
+        "ms": 14,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ],
+    "screenshot": "ui/screens/ui-001.jpg"
+  },
+  {
+    "id": "ui-002",
+    "form": "send money",
+    "name": "send money [Amount=\"\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": ""
+    },
+    "click": "Send money",
+    "messages": [
+      "Enter an amount above 0."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nEnter an amount above 0.",
+    "calls": []
+  },
+  {
+    "id": "ui-003",
+    "form": "send money",
+    "name": "send money [Amount=\"0\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "0"
+    },
+    "click": "Send money",
+    "messages": [
+      "Enter an amount above 0."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nEnter an amount above 0.",
+    "calls": []
+  },
+  {
+    "id": "ui-004",
+    "form": "send money",
+    "name": "send money [Amount=\"1.005\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "1.005"
+    },
+    "click": "Send money",
+    "messages": [
+      "Use at most 2 decimals."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nUse at most 2 decimals.",
+    "calls": []
+  },
+  {
+    "id": "ui-005",
+    "form": "send money",
+    "name": "send money [Amount=\"4.35\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "4.35"
+    },
+    "click": "Send money",
+    "messages": [
+      "Check the amount and try again."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nCheck the amount and try again.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 400,
+        "traceId": "f4859cdfab3311afd1165db9e70b7ca7",
+        "ms": 9,
+        "route": "/transfers",
+        "sql": []
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/9ad7d768-ee57-4b5b-bf92-4e303e3fc626",
+        "status": 200,
+        "traceId": "c050253df62aab6e6ed2890e2ba7d9ae",
+        "ms": 7,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ui-006",
+    "form": "send money",
+    "name": "send money [Amount=\"205\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "205"
+    },
+    "click": "Send money",
+    "messages": [
+      "Sent 205.00 USD to bob. Fee 1.03 USD."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 19,793.97 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.02 USD\n\nSend money\nSent 205.00 USD to bob. Fee 1.03 USD.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 201,
+        "traceId": "43b0451d9e6670035a7c35a6da4bee4e",
+        "ms": 15,
+        "route": "/transfers",
+        "sql": [
+          "SELECT * FROM transfers WHERE idempotency_key = $1",
+          "BEGIN",
+          "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+          "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
+          "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
+          "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
+          "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
+          "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
+          "COMMIT"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/b66c80be-1e18-4011-9b06-a11fe4965010",
+        "status": 200,
+        "traceId": "10b1120cde5cb903bebe52d7d1751f9e",
+        "ms": 5,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ui-007",
+    "form": "send money",
+    "name": "send money [Amount=\"5000\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "5000"
+    },
+    "click": "Send money",
+    "messages": [
+      "Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 14,975.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 25.00 USD\n\nSend money\nTransfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 201,
+        "traceId": "00edbfd73c5a148e11b732464653b229",
+        "ms": 13,
+        "route": "/transfers",
+        "sql": [
+          "SELECT * FROM transfers WHERE idempotency_key = $1",
+          "BEGIN",
+          "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+          "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
+          "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
+          "UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1",
+          "COMMIT"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/aa6d8d61-7462-4e82-8859-d8014bb1b233",
+        "status": 200,
+        "traceId": "2f948576f7079dc75ecc3007fde33346",
+        "ms": 6,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ui-008",
+    "form": "send money",
+    "name": "send money [Amount=\"10000.01\"]",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "bob",
+      "Amount": "10000.01"
+    },
+    "click": "Send money",
+    "messages": [
+      "Daily limit reached. You can still send 10,000.00 USD today."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 50.00 USD\n\nSend money\nDaily limit reached. You can still send 10,000.00 USD today.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 422,
+        "traceId": "5ba64cdfb8279c98969bb72be1b500f1",
+        "ms": 12,
+        "route": "/transfers",
+        "sql": [
+          "SELECT * FROM transfers WHERE idempotency_key = $1",
+          "BEGIN",
+          "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+          "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
+          "ROLLBACK"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/40136565-2b8f-4393-9af0-090e051becd6",
+        "status": 200,
+        "traceId": "04c262bd9ac1b760b2192d35e7ae090a",
+        "ms": 6,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ui-009",
+    "form": "send to EUR wallet",
+    "name": "send to EUR wallet",
+    "goto": "/#/send/{{alice}}",
+    "fill": {
+      "To": "carol",
+      "Amount": "50"
+    },
+    "click": "Send money",
+    "messages": [
+      "Both wallets must use the same currency."
+    ],
+    "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nBoth wallets must use the same currency.",
+    "calls": [
+      {
+        "method": "POST",
+        "path": "/transfers",
+        "status": 422,
+        "traceId": "f9463025f5c73bae0546319ab1b741ef",
+        "ms": 15,
+        "route": "/transfers",
+        "sql": [
+          "SELECT * FROM transfers WHERE idempotency_key = $1",
+          "BEGIN",
+          "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+          "ROLLBACK"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets/6bc6a22a-0f2c-4635-96cd-383f1172ce7d",
+        "status": 200,
+        "traceId": "1240a5c33df410140d9727b8271e9562",
+        "ms": 7,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      }
+    ],
+    "screenshot": "ui/screens/ui-009.jpg"
+  }
+]

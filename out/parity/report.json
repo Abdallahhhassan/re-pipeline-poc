@@ -1,7 +1,7 @@
 {
-  "total": 49,
+  "total": 75,
   "different": 0,
-  "accepted": 1,
+  "accepted": 4,
   "diffRate": 0,
   "results": [
     {
@@ -24,7 +24,7 @@
     },
     {
       "case": "journey: fund alice",
-      "request": "POST /wallets/04fd4a9a-df54-4299-958a-f16db4139b2e/deposits",
+      "request": "POST /wallets/d9b73898-b213-4bd4-b052-95af366ed541/deposits",
       "same": true,
       "differences": []
     },
@@ -42,19 +42,19 @@
     },
     {
       "case": "journey: view transfer",
-      "request": "GET /transfers/355283c8-2926-4a7c-a608-47aef31b03f3",
+      "request": "GET /transfers/e5778924-f608-4562-a715-053d7cd884cb",
       "same": true,
       "differences": []
     },
     {
       "case": "journey: view sender wallet",
-      "request": "GET /wallets/04fd4a9a-df54-4299-958a-f16db4139b2e",
+      "request": "GET /wallets/d9b73898-b213-4bd4-b052-95af366ed541",
       "same": true,
       "differences": []
     },
     {
       "case": "journey: view receiver wallet",
-      "request": "GET /wallets/5b0b51c9-dfab-4463-a611-53f67c50ef7a",
+      "request": "GET /wallets/45fdb2ef-8b8a-4916-a5a4-d2efc15924fd",
       "same": true,
       "differences": []
     },
@@ -309,6 +309,296 @@
       "request": "GET /transfers/00000000-0000-4000-8000-000000000000",
       "same": true,
       "differences": []
+    },
+    {
+      "case": "claim ui-F1: The start screen lists every wallet with its owner, currency, balance and amount on hold, each with a Send money link. Money shows with thousands separators, two decimals and the currency code.",
+      "request": "open /#/wallets",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/001-original.jpg",
+        "rebuild": "parity/ui/001-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F2: The wallets screen loads every wallet from GET /wallets, oldest first, in the same shape as GET /wallets/:id. No API scenario called this route; the browser crawl found it.",
+      "request": "GET /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim ui-F3: The send screen shows the sender's available balance and a form with To (every other wallet, as owner and currency) and Amount. It loads the sender and the wallet list.",
+      "request": "open /#/send/:id",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/002-original.jpg",
+        "rebuild": "parity/ui/002-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F4: While the person types, the screen previews the fee itself (0.5%, never below 1.00) without calling the API.",
+      "request": "open /#/send/:id, Amount=\"3000\"",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/003-original.jpg",
+        "rebuild": "parity/ui/003-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F5: The fee preview shows at least 1.00 for small amounts.",
+      "request": "open /#/send/:id, Amount=\"50\"",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/004-original.jpg",
+        "rebuild": "parity/ui/004-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F6: An empty or zero amount is stopped by the screen with \"Enter an amount above 0.\" and nothing is sent to the API.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"0\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/005-original.jpg",
+        "rebuild": "parity/ui/005-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F7: An amount with more than 2 decimals is stopped by the screen with \"Use at most 2 decimals.\" and nothing is sent.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"1.005\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/006-original.jpg",
+        "rebuild": "parity/ui/006-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F8: A normal send posts one transfer, shows \"Sent <amount> to <owner>. Fee <fee>.\" and refreshes the available balance (amount plus fee taken off).",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"100\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/007-original.jpg",
+        "rebuild": "parity/ui/007-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F9: From 5,000 the transfer is held: the screen says it is waiting for review and that the fee was charged.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"5000\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/008-original.jpg",
+        "rebuild": "parity/ui/008-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F10: Over the daily limit, the screen shows how much can still be sent today, using the remaining amount the API returns.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"10000.01\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/009-original.jpg",
+        "rebuild": "parity/ui/009-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F11: Sending to a wallet in another currency shows \"Both wallets must use the same currency.\" The screen lets the person pick it; only the API refuses.",
+      "request": "open /#/send/:id, To=\"carol\", Amount=\"50\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/010-original.jpg",
+        "rebuild": "parity/ui/010-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F12: When the balance cannot cover the amount plus the fee, the screen shows \"Not enough balance to cover the amount and the fee.\"",
+      "request": "open /#/send/:id, To=\"alice\", Amount=\"10\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/011-original.jpg",
+        "rebuild": "parity/ui/011-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F13: The fee preview and the charged fee can disagree by a cent: for 205.00 the screen previews 1.02 but the API charges 1.03. The screen rounds 0.5% itself without the API's correction.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"205\", click Send money",
+      "same": false,
+      "differences": [
+        "claim not met by rebuild: text not shown: \"Fee: 1.02 USD\""
+      ],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/012-original.jpg",
+        "rebuild": "parity/ui/012-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F14: A valid amount like 4.35 passes the screen's checks but the API rejects it, so the person sees the generic \"Check the amount and try again.\" This is the API's floating point bug showing through.",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"4.35\", click Send money",
+      "same": false,
+      "differences": [
+        "claim not met by rebuild: text not shown: \"Check the amount and try again.\"; no POST /transfers 400 request",
+        "message: \"Check the amount and try again.\" vs \"Sent 4.35 USD to bob. Fee 1.00 USD.\"",
+        "API calls: GET /wallets/:id 200, POST /transfers 400 vs GET /wallets/:id 200, POST /transfers 201"
+      ],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/013-original.jpg",
+        "rebuild": "parity/ui/013-rebuild.jpg"
+      }
+    },
+    {
+      "case": "claim ui-F15: Opening the send screen for a wallet that does not exist shows \"Wallet not found\" with a link back.",
+      "request": "open /#/send/00000000-0000-4000-8000-000000000000",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/014-original.jpg",
+        "rebuild": "parity/ui/014-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"100\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/015-original.jpg",
+        "rebuild": "parity/ui/015-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/016-original.jpg",
+        "rebuild": "parity/ui/016-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"0\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"0\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/017-original.jpg",
+        "rebuild": "parity/ui/017-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"1.005\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"1.005\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/018-original.jpg",
+        "rebuild": "parity/ui/018-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"4.35\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"4.35\", click Send money",
+      "same": false,
+      "differences": [
+        "message: \"Check the amount and try again.\" vs \"Sent 4.35 USD to bob. Fee 1.00 USD.\"",
+        "API calls: GET /wallets/:id 200, POST /transfers 400 vs GET /wallets/:id 200, POST /transfers 201"
+      ],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/019-original.jpg",
+        "rebuild": "parity/ui/019-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"205\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"205\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/020-original.jpg",
+        "rebuild": "parity/ui/020-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"5000\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"5000\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/021-original.jpg",
+        "rebuild": "parity/ui/021-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send money [Amount=\"10000.01\"]",
+      "request": "open /#/send/:id, To=\"bob\", Amount=\"10000.01\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/022-original.jpg",
+        "rebuild": "parity/ui/022-rebuild.jpg"
+      }
+    },
+    {
+      "case": "ui: send to EUR wallet",
+      "request": "open /#/send/:id, To=\"carol\", Amount=\"50\", click Send money",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/023-original.jpg",
+        "rebuild": "parity/ui/023-rebuild.jpg"
+      }
+    },
+    {
+      "case": "screen: /#/wallets",
+      "request": "open /#/wallets",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/024-original.jpg",
+        "rebuild": "parity/ui/024-rebuild.jpg"
+      }
+    },
+    {
+      "case": "screen: /#/send/:id",
+      "request": "open /#/send/{{alice}}",
+      "same": true,
+      "differences": [],
+      "kind": "ui",
+      "shots": {
+        "original": "parity/ui/025-original.jpg",
+        "rebuild": "parity/ui/025-rebuild.jpg"
+      }
     }
   ]
 }

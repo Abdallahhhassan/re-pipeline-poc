@@ -1,12 +1,12 @@
 {
   "step": "analyze",
-  "order": 2,
+  "order": 3,
   "n": "6",
   "title": "Analyze",
   "does": "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:51:20.206Z",
-  "ms": 18,
+  "startedAt": "2026-11-11T11:33:05.210Z",
+  "ms": 22,
   "tools": [
     {
       "name": "Evidence builder",
@@ -23,14 +23,14 @@
     {
       "label": "Recorded requests",
       "path": "out/capture/recordings.json",
-      "bytes": 17185,
-      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.227Z\"\n      }\n    },\n    \"traceId\": \"d2e5f379c37c363edd299b001b427423\",\n    \"ms\": 24\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.235Z\"\n      }\n    },\n    \"traceId\": \"7aba10d8763b94383920624def3f172e\",\n    \"ms\": 4\n  }\n]\n… 20 more items (22 total)"
+      "bytes": 17186,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"492e1500-f602-458e-8480-b98f00ed53a3\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.435Z\"\n      }\n    },\n    \"traceId\": \"8675dfd587aa3d4ceee277c560c36e56\",\n    \"ms\": 29\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"6b5514c9-448c-44e4-8953-1caa040a6985\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.451Z\"\n      }\n    },\n    \"traceId\": \"5c7c10b843068ff4862bb9bf8722379d\",\n    \"ms\": 7\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Traces (route + SQL per request)",
       "path": "out/capture/traces.json",
       "bytes": 16984,
-      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 11,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 10,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
+      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 13,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 12,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Database schema",
@@ -41,15 +41,27 @@
     {
       "label": "Source slice",
       "path": "out/capture/code-slice.md",
-      "bytes": 9558,
+      "bytes": 9762,
       "preview": "### demo-target/src/db.ts\n```\n   1  import { Pool, PoolClient } from \"pg\";\n   2  \n   3  export const pool = new Pool({ connectionString: process.env.DATABASE_URL });\n   4  \n   5  export async function inTx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {\n   6    const client = await pool.connect();\n   7    try {\n   8      await client.query(\"BEGIN\");\n   9      const result = await fn(client);\n  10      await client.query(\"COMMIT\");\n  11      return result;\n  12    } catch (err) {\n  13      await client.query(\"ROLLBACK\");\n  14      throw err;\n  15    } finally {\n  16      client.release();\n  17    }\n  18  }\n  19  \n```\n\n### demo-target/src/errors.ts\n```\n   1  export class ApiError extends Error {\n   2    constructor(\n   3      public status: number,\n   4      public code: string,\n   5      public extra: Record<string, unknown> = {},\n   6    ) {\n   7      super(code);\n   8    }\n   9  }\n  10  \n  11  export const isUuid = (v: unknown): v is string =>\n  12    typeof v === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);\n  13  \n  14  /** Money arrives as a JSON number with at most 2 decimals. */\n  15  export function parseAmount(value: unknown, field = \"amount\"): number {\n  16    if (typeof value !== \"number\" || !Number.isFinite(value) || value <= 0) {\n  17      throw new ApiError(400, \"VALIDATION_ERROR\", { field });\n  18    }\n  19    if (Math.round(value * 100) !== value * 100) {\n  20      throw new ApiError(400, \"VALIDATION_ERROR\", { field, reason: \"max 2 decimals\" });\n  21    }\n  22    return value;\n  23  }\n  24  \n```\n\n### demo-target/sr\n…"
+    },
+    {
+      "label": "UI crawl: screens",
+      "path": "out/ui/screens.json",
+      "bytes": 3579,
+      "preview": "[\n  {\n    \"id\": \"screen-01\",\n    \"template\": \"/#/wallets\",\n    \"url\": \"http://127.0.0.1:4001/#/wallets\",\n    \"title\": \"Wallets\",\n    \"structure\": \"- main:\\n  - heading \\\"Wallets\\\" [level=1]\\n  - table:\\n    - rowgroup:\\n      - row \\\"Owner Currency Balance On hold\\\":\\n        - columnheader \\\"Owner\\\"\\n        - columnheader \\\"Currency\\\"\\n        - columnheader \\\"Balance\\\"\\n        - columnheader \\\"On hold\\\"\\n        - columnheader\\n    - rowgroup:\\n      - row \\\"alice USD 20,000.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"alice\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"20,000.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\\\"\\n      - row \\\"bob USD 0.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"bob\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\\\"\\n      - row \\\"carol EUR 0.00 EUR 0.00 EUR Send money\\\":\\n        - cell \\\"carol\\\"\\n        - cell \\\"EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\\\"\",\n    \"heading\": \"Wallets\",\n    \"fields\": [],\n    \"buttons\": [],\n    \"links\": [\n      \"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\",\n      \"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\",\n      \"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\"\n    \n…"
+    },
+    {
+      "label": "UI crawl: form tries",
+      "path": "out/ui/interactions.json",
+      "bytes": 11091,
+      "preview": "[\n  {\n    \"id\": \"ui-001\",\n    \"form\": \"send money\",\n    \"name\": \"send money\",\n    \"goto\": \"/#/send/{{alice}}\",\n    \"fill\": {\n      \"To\": \"bob\",\n      \"Amount\": \"100\"\n    },\n    \"click\": \"Send money\",\n    \"messages\": [\n      \"Sent 100.00 USD to bob. Fee 1.00 USD.\"\n    ],\n    \"screenText\": \"Back to wallets\\nSend money\\n\\nFrom alice: 19,899.00 USD available\\n\\nTo\\nbob (USD)\\ncarol (EUR)\\nAmount\\n\\nFee: 1.00 USD\\n\\nSend money\\nSent 100.00 USD to bob. Fee 1.00 USD.\",\n    \"calls\": [\n      {\n        \"method\": \"POST\",\n        \"path\": \"/transfers\",\n        \"status\": 201,\n        \"traceId\": \"25d237beae79ad53c802c25ba1cb4dd4\",\n        \"ms\": 23,\n        \"route\": \"/transfers\",\n        \"sql\": [\n          \"SELECT * FROM transfers WHERE idempotency_key = $1\",\n          \"BEGIN\",\n          \"SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE\",\n          \"SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'\",\n          \"INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)\",\n          \"UPDATE wallets SET balance = balance - $2 WHERE id = $1\",\n          \"UPDATE wallets SET balance = balance + $2 WHERE id = $1\",\n          \"INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'tran\n…\n… 7 more items (9 total)"
     }
   ],
   "outputs": [
     {
       "label": "Prompt for /wallets (what the analyst sees)",
       "path": "out/analysis/wallets/prompt.md",
-      "bytes": 11167,
+      "bytes": 11371,
       "preview": "<!-- system -->\nYou are a reverse engineering analyst. You receive evidence about one area of a running system:\nrecorded HTTP requests and responses, the database statements each request ran (from traces),\nthe database schema, and the source files behind these routes with line numbers.\n\nDescribe how the system behaves, as findings a developer could rebuild it from.\n\nRules:\n- Every finding cites evidence: recording ids (e.g. \"probe-014\"), traces as \"trace:<recording id>\",\n  source lines as \"src:<file>:<line>\".\n- tag: \"Seen\" if a recording directly shows it, \"Inferred\" if you concluded it from code or several\n  observations, \"Unknown\" if the evidence cannot settle it.\n- Add a probe to every finding that HTTP calls can test. The pipeline runs each probe on a fresh\n  sandbox after the fixtures, so the fixture variables listed below are available as {{name}}.\n  Findings without a passing probe are capped at \"Inferred\", so prefer testable claims.\n- Cover edge cases the code reveals even if no recording hit them (thresholds, limits, states).\n- Claims describe behavior in plain words: inputs, outputs, states, limits, errors. No code.\n- Put open questions in \"unknowns\": behavior the code hints at that no endpoint or evidence settles.\n- Reply with JSON only, in exactly this shape:\n{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"rule | flow | data | error | contract\",\n      \"claim\": \"One plain-language sentence about behavior.\",\n      \"tag\": \"Seen | Inferred | Unknown\",\n      \"evidence\": [\"probe-014\", \"trace:flow-005\", \"src:demo-target/src/po\n…"
     },
     {
@@ -71,46 +83,69 @@
       "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"flow\",\n      \"claim\": \"A transfer below the review threshold completes immediately: 201, status \\\"completed\\\", and money values come back as strings with two decimals.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"flow-005\",\n        \"probe-031\",\n        \"probe-036\",\n        \"probe-041\",\n        \"src:demo-target/src/transfers.ts:54\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/transfers\",\n          \"body\": {\n            \"fromWalletId\": \"{{alice}}\",\n            \"toWalletId\": \"{{bob}}\",\n            \"amount\": 100\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"status\": \"completed\",\n            \"amount\": \"100.00\",\n            \"fee\": \"1.00\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F2\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"rule\",\n      \"claim\": \"The fee is 0.5% of the amount, rounded to cents.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"probe-041\",\n        \"probe-046\",\n        \"probe-051\",\n        \"src:demo-target/src/policy.ts:9-12\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/transfers\",\n          \"body\": {\n            \"fromWalletId\": \"{{alice}}\",\n            \"toWalletId\": \"{{bob}}\",\n            \"amount\": 3000\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"fee\": \"15.00\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F3\",\n      \"route\": \"\n…"
     },
     {
+      "label": "Prompt for /ui (what the analyst sees)",
+      "path": "out/analysis/ui/prompt.md",
+      "bytes": 20425,
+      "preview": "<!-- system -->\nYou are a reverse engineering analyst for a web app's screens. You receive what a browser\ncrawl saw: each screen's structure (accessibility tree), fields, buttons, links and the API calls it made\non load; then form tries where one value was changed at a time, with the message shown, all visible\ntext after the click, and each API call with its backend route, status and SQL. You also get the\nfront-end source with line numbers.\n\nDescribe what a person sees and can do, as findings a developer could rebuild the screens from.\n\nRules:\n- Every finding cites evidence: screens as \"ui:screen-01\", form tries as \"ui:ui-003\", source lines as\n  \"src:<file>:<line>\".\n- route is \"UI <screen>\", e.g. \"UI /#/send/:id\".\n- Add a uiProbe to every finding a browser can test. The pipeline opens goto (fixture variables are\n  available as {{name}}), fills fields by their visible label, clicks the button named in click\n  (leave click out to test what shows while typing), then checks expect: text that must be visible,\n  an API call that must happen (\"POST /transfers 201\"), or one that must not (\"POST /transfers\").\n  Each probe runs from fresh data. Findings without a passing probe are capped at \"Inferred\".\n- If a screen calls an API route, you may add a finding for that route with an HTTP \"probe\" in the\n  API shape: { \"request\": { \"method\", \"path\", \"body\" }, \"expect\": { \"status\", \"body\" } }.\n- Separate rules the screen enforces itself (no API call) from rules it only reports from the API.\n- Look for places where the screen and the API disagree, for example a value the screen computes\n  i\n…"
+    },
+    {
+      "label": "Findings for /ui (what the analyst wrote)",
+      "path": "out/analysis/ui/findings.json",
+      "bytes": 11679,
+      "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"UI /#/wallets\",\n      \"kind\": \"screen\",\n      \"claim\": \"The start screen lists every wallet with its owner, currency, balance and amount on hold, each with a Send money link. Money shows with thousands separators, two decimals and the currency code.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"ui:screen-01\",\n        \"src:demo-target/public/app.js:19\",\n        \"src:demo-target/public/app.js:27\"\n      ],\n      \"uiProbe\": {\n        \"goto\": \"/#/wallets\",\n        \"expect\": {\n          \"text\": [\n            \"alice\",\n            \"20,000.00 USD\",\n            \"carol\",\n            \"EUR\"\n          ],\n          \"request\": \"GET /wallets 200\"\n        }\n      }\n    },\n    {\n      \"id\": \"F2\",\n      \"route\": \"GET /wallets\",\n      \"kind\": \"contract\",\n      \"claim\": \"The wallets screen loads every wallet from GET /wallets, oldest first, in the same shape as GET /wallets/:id. No API scenario called this route; the browser crawl found it.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"ui:screen-01\",\n        \"src:demo-target/src/wallets.ts:33\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"GET\",\n          \"path\": \"/wallets\"\n        },\n        \"expect\": {\n          \"status\": 200,\n          \"body\": [\n            {\n              \"owner\": \"alice\",\n              \"currency\": \"USD\"\n            },\n            {\n              \"owner\": \"bob\",\n              \"currency\": \"USD\"\n            },\n            {\n              \"owner\": \"carol\",\n              \"currency\": \"EUR\"\n            }\n          ]\n        }\n      }\n    },\n\n…"
+    },
+    {
       "label": "All findings, merged",
       "path": "out/analysis/findings.json",
-      "bytes": 24474,
+      "bytes": 36524,
       "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"wallets-F1\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"flow\",\n      \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"fixture-001\",\n        \"fixture-002\",\n        \"src:demo-target/src/wallets.ts:18-31\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\"\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"USD\",\n            \"balance\": \"0.00\",\n            \"held\": \"0.00\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F2\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"rule\",\n      \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n      \"tag\": \"Inferred\",\n      \"evidence\": [\n        \"fixture-003\",\n        \"src:demo-target/src/wallets.ts:5,23-25\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"GBP\"\n          }\n        },\n        \"expect\": {\n          \"status\": 400,\n          \"body\": {\n            \"error\": \"VALIDATION_ERROR\",\n            \"field\": \"currency\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F3\",\n      \"route\": \"POST /wallets\",\n      \"kin\n…"
     }
   ],
   "lines": [
     {
-      "ms": 2,
+      "ms": 1,
       "level": "info",
       "msg": "mode: manual (no ANTHROPIC_API_KEY or --manual): prompts are written, findings come from findings.json files"
     },
     {
-      "ms": 8,
+      "ms": 16,
       "level": "info",
       "msg": "area /wallets: 6 requests, routes /wallets, /wallets/:id/deposits, /wallets/:id; evidence bundle 9k chars"
     },
     {
-      "ms": 9,
+      "ms": 19,
       "level": "ok",
       "msg": "area /wallets: 8 findings (8 with probes), 1 unknowns"
     },
     {
-      "ms": 16,
+      "ms": 19,
       "level": "info",
       "msg": "area /transfers: 16 requests, routes /transfers, /transfers/:id; evidence bundle 26k chars"
     },
     {
-      "ms": 17,
+      "ms": 20,
       "level": "ok",
       "msg": "area /transfers: 20 findings (19 with probes), 4 unknowns"
+    },
+    {
+      "ms": 20,
+      "level": "info",
+      "msg": "area /ui: 2 screens, 9 form tries; evidence bundle 18k chars"
+    },
+    {
+      "ms": 21,
+      "level": "ok",
+      "msg": "area /ui: 16 findings (16 with probes), 2 unknowns"
     }
   ],
   "summary": {
     "mode": "manual",
     "areas": {
       "wallets": "using existing findings.json",
-      "transfers": "using existing findings.json"
+      "transfers": "using existing findings.json",
+      "ui": "using existing findings.json"
     },
-    "findings": 28,
-    "unknowns": 5
+    "findings": 44,
+    "unknowns": 7
   }
 }

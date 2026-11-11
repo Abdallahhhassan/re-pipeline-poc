@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import { Config, outPath, readJson, writeJson } from "../config";
 import { askClaude, extractJson, hasApiKey } from "../lib/claude";
-import { numbered, RequestTrace, sliceSource } from "../lib/evidence";
-import { Analysis, FINDINGS_SCHEMA } from "../lib/findings";
+import { allSource, numbered, RequestTrace, sliceSource } from "../lib/evidence";
+import { Analysis, FINDINGS_SCHEMA, UI_FINDINGS_SCHEMA } from "../lib/findings";
+import type { Interaction, Screen } from "./crawl";
 import { loadScenarios, Recording } from "../lib/scenarios";
 import { log } from "../lib/log";
 import { claudeTool } from "../lib/tools";
@@ -27,6 +28,67 @@ Rules:
 - Put open questions in "unknowns": behavior the code hints at that no endpoint or evidence settles.
 - Reply with JSON only, in exactly this shape:
 ${FINDINGS_SCHEMA}`;
+
+const UI_SYSTEM = `You are a reverse engineering analyst for a web app's screens. You receive what a browser
+crawl saw: each screen's structure (accessibility tree), fields, buttons, links and the API calls it made
+on load; then form tries where one value was changed at a time, with the message shown, all visible
+text after the click, and each API call with its backend route, status and SQL. You also get the
+front-end source with line numbers.
+
+Describe what a person sees and can do, as findings a developer could rebuild the screens from.
+
+Rules:
+- Every finding cites evidence: screens as "ui:screen-01", form tries as "ui:ui-003", source lines as
+  "src:<file>:<line>".
+- route is "UI <screen>", e.g. "UI /#/send/:id".
+- Add a uiProbe to every finding a browser can test. The pipeline opens goto (fixture variables are
+  available as {{name}}), fills fields by their visible label, clicks the button named in click
+  (leave click out to test what shows while typing), then checks expect: text that must be visible,
+  an API call that must happen ("POST /transfers 201"), or one that must not ("POST /transfers").
+  Each probe runs from fresh data. Findings without a passing probe are capped at "Inferred".
+- If a screen calls an API route, you may add a finding for that route with an HTTP "probe" in the
+  API shape: { "request": { "method", "path", "body" }, "expect": { "status", "body" } }.
+- Separate rules the screen enforces itself (no API call) from rules it only reports from the API.
+- Look for places where the screen and the API disagree, for example a value the screen computes
+  itself that the API then computes differently. Those go in findings and in unknowns.
+- Reply with JSON only, in exactly this shape:
+${UI_FINDINGS_SCHEMA}`;
+
+const clip = (s: string, max = 600) => (s.length > max ? s.slice(0, max) + "…" : s);
+
+function uiEvidence(cfg: Config, screens: Screen[], tries: Interaction[]) {
+  const scen = loadScenarios(cfg.scenarios);
+  const vars = scen.fixtures.flatMap((f) => Object.keys(f.save ?? {}).map((v) => `- {{${v}}}: saved by fixture "${f.name}"`));
+  const call = (c: Interaction["calls"][number]) =>
+    `${c.method} ${c.path.replace(/[0-9a-f-]{36}/g, ":id")} → ${c.status} (route ${c.route ?? "?"})${c.sql.length ? `\n      sql: ${c.sql.filter((q) => !/^(BEGIN|COMMIT)$/.test(q)).join(" | ")}` : ""}`;
+  const screenRows = screens.map((s) =>
+    [
+      `#### ${s.id} ${s.template}: "${s.heading}"`,
+      `- fields: ${s.fields.map((f) => `${f.label} (${f.kind}${f.options ? `: ${f.options.join(", ")}` : ""})`).join("; ") || "none"}`,
+      `- buttons: ${s.buttons.join(", ") || "none"}`,
+      `- API calls on load:\n${s.loadCalls.map((c) => `    - ${call(c)}`).join("\n") || "    - none"}`,
+      `- structure:\n\`\`\`\n${clip(s.structure, 1500)}\n\`\`\``,
+    ].join("\n"),
+  );
+  const tryRows = tries.map((t) =>
+    [
+      `#### ${t.id} ${t.name}`,
+      `- typed: ${JSON.stringify(t.fill)}, then clicked "${t.click}" on ${t.goto}`,
+      `- message: ${t.messages.join(" ") || "(none)"}`,
+      `- API calls after the click:\n${t.calls.map((c) => `    - ${call(c)}`).join("\n") || "    - none"}`,
+      `- visible text after the click:\n${t.screenText.split("\n").map((l) => `    > ${l}`).join("\n")}`,
+    ].join("\n"),
+  );
+  const files = cfg.ui?.source ? allSource(cfg.ui.source.dir, cfg.ui.source.extensions) : [];
+  return [
+    `# Area: the UI`,
+    `Screens: ${screens.map((s) => s.template).join(", ")}`,
+    `## Fixture variables (available in probes)\n${vars.join("\n")}`,
+    `## Screens\n${screenRows.join("\n\n")}`,
+    `## Form tries (one value changed at a time, fresh data each time)\n${tryRows.join("\n\n")}`,
+    `## Front-end source\n${files.map((f) => `### ${f.file}\n\`\`\`\n${numbered(f.content)}\n\`\`\``).join("\n\n")}`,
+  ].join("\n\n");
+}
 
 /** Groups the system by its first path segment; each group is analyzed by its own worker call. */
 export function areasOf(recordings: Recording[], traces: RequestTrace[]) {
@@ -92,17 +154,29 @@ export async function analyze(cfg: Config, flags: Set<string>) {
   const merged: Analysis = { findings: [], unknowns: [] };
   const status: Record<string, string> = {};
 
+  const jobs: { area: string; system: string; evidence: string; about: string }[] = [];
   for (const [area, { recordings: recs, routes }] of areasOf(recordings, traces)) {
-    const evidence = evidenceFor(cfg, area, recs, routes, traces);
-    log.info(`area /${area}: ${recs.length} requests, routes ${[...routes].join(", ")}; evidence bundle ${Math.round(evidence.length / 1000)}k chars`);
+    jobs.push({ area, system: SYSTEM, evidence: evidenceFor(cfg, area, recs, routes, traces), about: `${recs.length} requests, routes ${[...routes].join(", ")}` });
+  }
+  // The UI is its own area: screens and form tries from the browser crawl, plus the front-end source.
+  if (cfg.ui && fs.existsSync(outPath(cfg, "ui", "screens.json"))) {
+    const screens = readJson<Screen[]>(outPath(cfg, "ui", "screens.json"));
+    const tries = readJson<Interaction[]>(outPath(cfg, "ui", "interactions.json"));
+    log.input("UI crawl: screens", outPath(cfg, "ui", "screens.json"));
+    log.input("UI crawl: form tries", outPath(cfg, "ui", "interactions.json"));
+    jobs.push({ area: "ui", system: UI_SYSTEM, evidence: uiEvidence(cfg, screens, tries), about: `${screens.length} screens, ${tries.length} form tries` });
+  }
+
+  for (const { area, system, evidence, about } of jobs) {
+    log.info(`area /${area}: ${about}; evidence bundle ${Math.round(evidence.length / 1000)}k chars`);
     const promptFile = outPath(cfg, "analysis", area, "prompt.md");
-    fs.writeFileSync(promptFile, `<!-- system -->\n${SYSTEM}\n\n<!-- user -->\n${evidence}\n`);
+    fs.writeFileSync(promptFile, `<!-- system -->\n${system}\n\n<!-- user -->\n${evidence}\n`);
     const findingsFile = outPath(cfg, "analysis", area, "findings.json");
 
     if (!manual && !flags.has("--keep")) {
       log.info(`area /${area}: calling Claude (${cfg.analysis.model})`);
       const t0 = Date.now();
-      const reply = await askClaude({ model: cfg.analysis.model, maxTokens: cfg.analysis.maxTokens, system: SYSTEM, user: evidence });
+      const reply = await askClaude({ model: cfg.analysis.model, maxTokens: cfg.analysis.maxTokens, system, user: evidence });
       log.ok(`area /${area}: reply in ${Math.round((Date.now() - t0) / 1000)}s`);
       writeJson(findingsFile, extractJson(reply));
       status[area] = "analyzed via Claude API";
@@ -116,7 +190,7 @@ export async function analyze(cfg: Config, flags: Set<string>) {
     }
 
     const result = readJson<Analysis>(findingsFile);
-    log.ok(`area /${area}: ${result.findings.length} findings (${result.findings.filter((f) => f.probe).length} with probes), ${(result.unknowns ?? []).length} unknowns`);
+    log.ok(`area /${area}: ${result.findings.length} findings (${result.findings.filter((f) => f.probe || f.uiProbe).length} with probes), ${(result.unknowns ?? []).length} unknowns`);
     log.output(`Prompt for /${area} (what the analyst sees)`, promptFile);
     log.output(`Findings for /${area} (what the analyst wrote)`, findingsFile);
     merged.findings.push(...result.findings.map((f) => ({ ...f, area, id: `${area}-${f.id}` })));

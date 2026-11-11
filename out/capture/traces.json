@@ -2,7 +2,7 @@
   {
     "recordingId": "fixture-001",
     "route": "/wallets",
-    "spans": 11,
+    "spans": 13,
     "sql": [
       {
         "statement": "INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *",
@@ -16,7 +16,7 @@
   {
     "recordingId": "fixture-002",
     "route": "/wallets",
-    "spans": 10,
+    "spans": 12,
     "sql": [
       {
         "statement": "INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *",
@@ -30,7 +30,7 @@
   {
     "recordingId": "fixture-003",
     "route": "/wallets",
-    "spans": 10,
+    "spans": 12,
     "sql": [
       {
         "statement": "INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *",
@@ -44,7 +44,7 @@
   {
     "recordingId": "fixture-004",
     "route": "/wallets/:id/deposits",
-    "spans": 13,
+    "spans": 15,
     "sql": [
       {
         "statement": "BEGIN"
@@ -52,14 +52,14 @@
       {
         "statement": "UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d",
+          "492e1500-f602-458e-8480-b98f00ed53a3",
           "20000"
         ]
       },
       {
         "statement": "INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d",
+          "492e1500-f602-458e-8480-b98f00ed53a3",
           "20000"
         ]
       },
@@ -71,7 +71,7 @@
   {
     "recordingId": "flow-005",
     "route": "/transfers",
-    "spans": 22,
+    "spans": 24,
     "sql": [
       {
         "statement": "SELECT * FROM transfers WHERE idempotency_key = $1",
@@ -85,20 +85,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"ff81d856-5253-4813-96e0-3977abbc025d\",\"33e8e107-ba17-49eb-a3a0-8188ec4eb983\"]"
+          "[\"492e1500-f602-458e-8480-b98f00ed53a3\",\"6b5514c9-448c-44e4-8953-1caa040a6985\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d"
+          "492e1500-f602-458e-8480-b98f00ed53a3"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d",
-          "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
+          "492e1500-f602-458e-8480-b98f00ed53a3",
+          "6b5514c9-448c-44e4-8953-1caa040a6985",
           "100",
           "1",
           "completed",
@@ -108,8 +108,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "5848fde8-94a0-4478-a209-7b68985de2fc",
-          "ff81d856-5253-4813-96e0-3977abbc025d",
+          "f78954d3-521a-46ae-ac50-baebdc2ec1fc",
+          "492e1500-f602-458e-8480-b98f00ed53a3",
           "100",
           "1"
         ]
@@ -117,22 +117,22 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d",
+          "492e1500-f602-458e-8480-b98f00ed53a3",
           "101"
         ]
       },
       {
         "statement": "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
         "values": [
-          "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
+          "6b5514c9-448c-44e4-8953-1caa040a6985",
           "100"
         ]
       },
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
         "values": [
-          "5848fde8-94a0-4478-a209-7b68985de2fc",
-          "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
+          "f78954d3-521a-46ae-ac50-baebdc2ec1fc",
+          "6b5514c9-448c-44e4-8953-1caa040a6985",
           "100"
         ]
       },
@@ -144,7 +144,7 @@
   {
     "recordingId": "flow-006",
     "route": "/transfers",
-    "spans": 12,
+    "spans": 14,
     "sql": [
       {
         "statement": "SELECT * FROM transfers WHERE idempotency_key = $1",
@@ -157,12 +157,12 @@
   {
     "recordingId": "flow-007",
     "route": "/transfers/:id",
-    "spans": 12,
+    "spans": 14,
     "sql": [
       {
         "statement": "SELECT * FROM transfers WHERE id = $1",
         "values": [
-          "5848fde8-94a0-4478-a209-7b68985de2fc"
+          "f78954d3-521a-46ae-ac50-baebdc2ec1fc"
         ]
       }
     ]
@@ -170,12 +170,12 @@
   {
     "recordingId": "flow-008",
     "route": "/wallets/:id",
-    "spans": 10,
+    "spans": 12,
     "sql": [
       {
         "statement": "SELECT * FROM wallets WHERE id = $1",
         "values": [
-          "ff81d856-5253-4813-96e0-3977abbc025d"
+          "492e1500-f602-458e-8480-b98f00ed53a3"
         ]
       }
     ]
@@ -183,12 +183,12 @@
   {
     "recordingId": "flow-009",
     "route": "/wallets/:id",
-    "spans": 10,
+    "spans": 12,
     "sql": [
       {
         "statement": "SELECT * FROM wallets WHERE id = $1",
         "values": [
-          "33e8e107-ba17-49eb-a3a0-8188ec4eb983"
+          "6b5514c9-448c-44e4-8953-1caa040a6985"
         ]
       }
     ]
@@ -196,7 +196,7 @@
   {
     "recordingId": "flow-010",
     "route": "/transfers",
-    "spans": 15,
+    "spans": 17,
     "sql": [
       {
         "statement": "BEGIN"
@@ -204,7 +204,7 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"ff81d856-5253-4813-96e0-3977abbc025d\",\"410a8569-1b8f-4cf6-9dce-8076ca51d9c0\"]"
+          "[\"492e1500-f602-458e-8480-b98f00ed53a3\",\"563b0876-2d5d-4875-b34b-caba771a40bf\"]"
         ]
       },
       {
@@ -215,7 +215,7 @@
   {
     "recordingId": "flow-011",
     "route": "/transfers",
-    "spans": 16,
+    "spans": 18,
     "sql": [
       {
         "statement": "BEGIN"
@@ -223,13 +223,13 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\"ff81d856-5253-4813-96e0-3977abbc025d\"]"
+          "[\"6b5514c9-448c-44e4-8953-1caa040a6985\",\"492e1500-f602-458e-8480-b98f00ed53a3\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "33e8e107-ba17-49eb-a3a0-8188ec4eb983"
+          "6b5514c9-448c-44e4-8953-1caa040a6985"
         ]
       },
       {
@@ -240,25 +240,25 @@
   {
     "recordingId": "probe-016",
     "route": "/transfers",
-    "spans": 11,
+    "spans": 13,
     "sql": []
   },
   {
     "recordingId": "probe-021",
     "route": "/transfers",
-    "spans": 11,
+    "spans": 13,
     "sql": []
   },
   {
     "recordingId": "probe-026",
     "route": "/transfers",
-    "spans": 11,
+    "spans": 13,
     "sql": []
   },
   {
     "recordingId": "probe-031",
     "route": "/transfers",
-    "spans": 20,
+    "spans": 22,
     "sql": [
       {
         "statement": "BEGIN"
@@ -266,20 +266,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"44c7263b-4b46-4b4b-a058-5877d06546c0\",\"4a31fa0e-f231-4a6b-a632-a71eb560ad0c\"]"
+          "[\"2d027293-ee6d-40aa-bdbe-e3efa8dad59c\",\"fb4e136f-7dc2-4cb6-bf22-0ef1a5781823\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "44c7263b-4b46-4b4b-a058-5877d06546c0"
+          "2d027293-ee6d-40aa-bdbe-e3efa8dad59c"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "44c7263b-4b46-4b4b-a058-5877d06546c0",
-          "4a31fa0e-f231-4a6b-a632-a71eb560ad0c",
+          "2d027293-ee6d-40aa-bdbe-e3efa8dad59c",
+          "fb4e136f-7dc2-4cb6-bf22-0ef1a5781823",
           "1.5",
           "1",
           "completed",
@@ -289,8 +289,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "927b0353-d4ba-4b5a-96af-a490937d6e96",
-          "44c7263b-4b46-4b4b-a058-5877d06546c0",
+          "d031ad1b-00e2-410f-9615-ae64cce927de",
+          "2d027293-ee6d-40aa-bdbe-e3efa8dad59c",
           "1.5",
           "1"
         ]
@@ -298,22 +298,22 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
         "values": [
-          "44c7263b-4b46-4b4b-a058-5877d06546c0",
+          "2d027293-ee6d-40aa-bdbe-e3efa8dad59c",
           "2.5"
         ]
       },
       {
         "statement": "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
         "values": [
-          "4a31fa0e-f231-4a6b-a632-a71eb560ad0c",
+          "fb4e136f-7dc2-4cb6-bf22-0ef1a5781823",
           "1.5"
         ]
       },
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
         "values": [
-          "927b0353-d4ba-4b5a-96af-a490937d6e96",
-          "4a31fa0e-f231-4a6b-a632-a71eb560ad0c",
+          "d031ad1b-00e2-410f-9615-ae64cce927de",
+          "fb4e136f-7dc2-4cb6-bf22-0ef1a5781823",
           "1.5"
         ]
       },
@@ -325,7 +325,7 @@
   {
     "recordingId": "probe-036",
     "route": "/transfers",
-    "spans": 20,
+    "spans": 22,
     "sql": [
       {
         "statement": "BEGIN"
@@ -333,20 +333,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"211d564c-4f92-42bd-b2d3-42154b76d6d8\",\"7d33475c-5fbc-41fc-9f11-be4800234751\"]"
+          "[\"a98f6158-0b39-4152-88a2-76a1b0510ea0\",\"e2d97c17-d1a7-4f41-ad6b-53b1218a3f17\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "211d564c-4f92-42bd-b2d3-42154b76d6d8"
+          "a98f6158-0b39-4152-88a2-76a1b0510ea0"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "211d564c-4f92-42bd-b2d3-42154b76d6d8",
-          "7d33475c-5fbc-41fc-9f11-be4800234751",
+          "a98f6158-0b39-4152-88a2-76a1b0510ea0",
+          "e2d97c17-d1a7-4f41-ad6b-53b1218a3f17",
           "199.99",
           "1",
           "completed",
@@ -356,8 +356,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "2fd674f4-500d-4cc2-8bb9-c0507b6ea39d",
-          "211d564c-4f92-42bd-b2d3-42154b76d6d8",
+          "d57775d4-f1cc-4cf7-b9b3-42b5db3bf5c0",
+          "a98f6158-0b39-4152-88a2-76a1b0510ea0",
           "199.99",
           "1"
         ]
@@ -365,22 +365,22 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
         "values": [
-          "211d564c-4f92-42bd-b2d3-42154b76d6d8",
+          "a98f6158-0b39-4152-88a2-76a1b0510ea0",
           "200.99"
         ]
       },
       {
         "statement": "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
         "values": [
-          "7d33475c-5fbc-41fc-9f11-be4800234751",
+          "e2d97c17-d1a7-4f41-ad6b-53b1218a3f17",
           "199.99"
         ]
       },
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
         "values": [
-          "2fd674f4-500d-4cc2-8bb9-c0507b6ea39d",
-          "7d33475c-5fbc-41fc-9f11-be4800234751",
+          "d57775d4-f1cc-4cf7-b9b3-42b5db3bf5c0",
+          "e2d97c17-d1a7-4f41-ad6b-53b1218a3f17",
           "199.99"
         ]
       },
@@ -392,7 +392,7 @@
   {
     "recordingId": "probe-041",
     "route": "/transfers",
-    "spans": 20,
+    "spans": 22,
     "sql": [
       {
         "statement": "BEGIN"
@@ -400,20 +400,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"59c5df86-7e84-41a6-a79e-9b10b91c141d\",\"256512ec-746e-424c-b70b-f58f4c38bdf7\"]"
+          "[\"8528ebf9-603c-4037-b85b-475fc209f681\",\"cdb33be7-1110-4414-8511-5ff47a096b0f\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "59c5df86-7e84-41a6-a79e-9b10b91c141d"
+          "8528ebf9-603c-4037-b85b-475fc209f681"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "59c5df86-7e84-41a6-a79e-9b10b91c141d",
-          "256512ec-746e-424c-b70b-f58f4c38bdf7",
+          "8528ebf9-603c-4037-b85b-475fc209f681",
+          "cdb33be7-1110-4414-8511-5ff47a096b0f",
           "4999.99",
           "25",
           "completed",
@@ -423,8 +423,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "cac329c2-38fd-4265-b69e-e8da7dd53536",
-          "59c5df86-7e84-41a6-a79e-9b10b91c141d",
+          "fc8d0905-c06f-4a42-a488-c7791f5c3ae9",
+          "8528ebf9-603c-4037-b85b-475fc209f681",
           "4999.99",
           "25"
         ]
@@ -432,22 +432,22 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2 WHERE id = $1",
         "values": [
-          "59c5df86-7e84-41a6-a79e-9b10b91c141d",
+          "8528ebf9-603c-4037-b85b-475fc209f681",
           "5024.99"
         ]
       },
       {
         "statement": "UPDATE wallets SET balance = balance + $2 WHERE id = $1",
         "values": [
-          "256512ec-746e-424c-b70b-f58f4c38bdf7",
+          "cdb33be7-1110-4414-8511-5ff47a096b0f",
           "4999.99"
         ]
       },
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)",
         "values": [
-          "cac329c2-38fd-4265-b69e-e8da7dd53536",
-          "256512ec-746e-424c-b70b-f58f4c38bdf7",
+          "fc8d0905-c06f-4a42-a488-c7791f5c3ae9",
+          "cdb33be7-1110-4414-8511-5ff47a096b0f",
           "4999.99"
         ]
       },
@@ -459,7 +459,7 @@
   {
     "recordingId": "probe-046",
     "route": "/transfers",
-    "spans": 18,
+    "spans": 20,
     "sql": [
       {
         "statement": "BEGIN"
@@ -467,20 +467,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"02a58837-1517-4a51-a939-63254eeae863\",\"3038f07b-bb70-4a58-be9a-0a84f0c4cd89\"]"
+          "[\"c4d70a98-3864-45ef-b4c2-1928565c08f0\",\"71df9195-b80c-4321-a90f-6b41a11585ba\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "02a58837-1517-4a51-a939-63254eeae863"
+          "c4d70a98-3864-45ef-b4c2-1928565c08f0"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "02a58837-1517-4a51-a939-63254eeae863",
-          "3038f07b-bb70-4a58-be9a-0a84f0c4cd89",
+          "c4d70a98-3864-45ef-b4c2-1928565c08f0",
+          "71df9195-b80c-4321-a90f-6b41a11585ba",
           "5000",
           "25",
           "pending_review",
@@ -490,8 +490,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "be6e8d17-7666-400a-ba74-adbca85705ad",
-          "02a58837-1517-4a51-a939-63254eeae863",
+          "bfa86aec-edb7-4489-becf-b24ccd43e863",
+          "c4d70a98-3864-45ef-b4c2-1928565c08f0",
           "5000",
           "25"
         ]
@@ -499,7 +499,7 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1",
         "values": [
-          "02a58837-1517-4a51-a939-63254eeae863",
+          "c4d70a98-3864-45ef-b4c2-1928565c08f0",
           "5025",
           "5000"
         ]
@@ -512,7 +512,7 @@
   {
     "recordingId": "probe-051",
     "route": "/transfers",
-    "spans": 18,
+    "spans": 20,
     "sql": [
       {
         "statement": "BEGIN"
@@ -520,20 +520,20 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"f6719079-fe46-4ac1-9b7f-ffc821229e95\",\"06561f49-288b-413c-8d06-4f4746a24a68\"]"
+          "[\"b976946c-71a6-4c41-9b1b-3013cdf68bb2\",\"6c1100cc-b8d9-47c4-b043-d3df7672b077\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "f6719079-fe46-4ac1-9b7f-ffc821229e95"
+          "b976946c-71a6-4c41-9b1b-3013cdf68bb2"
         ]
       },
       {
         "statement": "INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         "values": [
-          "f6719079-fe46-4ac1-9b7f-ffc821229e95",
-          "06561f49-288b-413c-8d06-4f4746a24a68",
+          "b976946c-71a6-4c41-9b1b-3013cdf68bb2",
+          "6c1100cc-b8d9-47c4-b043-d3df7672b077",
           "10000",
           "50",
           "pending_review",
@@ -543,8 +543,8 @@
       {
         "statement": "INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)",
         "values": [
-          "db48b26b-0d45-4da7-8baa-cab95240ce58",
-          "f6719079-fe46-4ac1-9b7f-ffc821229e95",
+          "e4aca8a8-5cc8-4d23-9243-70adad0aeec0",
+          "b976946c-71a6-4c41-9b1b-3013cdf68bb2",
           "10000",
           "50"
         ]
@@ -552,7 +552,7 @@
       {
         "statement": "UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1",
         "values": [
-          "f6719079-fe46-4ac1-9b7f-ffc821229e95",
+          "b976946c-71a6-4c41-9b1b-3013cdf68bb2",
           "10050",
           "10000"
         ]
@@ -565,7 +565,7 @@
   {
     "recordingId": "probe-056",
     "route": "/transfers",
-    "spans": 16,
+    "spans": 18,
     "sql": [
       {
         "statement": "BEGIN"
@@ -573,13 +573,13 @@
       {
         "statement": "SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
         "values": [
-          "[\"1cba0d5a-e7d4-407f-a6fa-bb302dfbb081\",\"4f5d5faf-b941-4aa1-a367-388e84f270ca\"]"
+          "[\"0853a34b-7363-4cee-acb6-8ad58985b8aa\",\"641795b2-f83a-48f5-888a-eb902defac30\"]"
         ]
       },
       {
         "statement": "SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
         "values": [
-          "1cba0d5a-e7d4-407f-a6fa-bb302dfbb081"
+          "0853a34b-7363-4cee-acb6-8ad58985b8aa"
         ]
       },
       {
@@ -590,13 +590,13 @@
   {
     "recordingId": "probe-061",
     "route": "/transfers",
-    "spans": 11,
+    "spans": 13,
     "sql": []
   },
   {
     "recordingId": "probe-066",
     "route": "/transfers",
-    "spans": 11,
+    "spans": 13,
     "sql": []
   }
 ]

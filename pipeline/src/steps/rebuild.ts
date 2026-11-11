@@ -20,6 +20,10 @@ Constraints:
   DECISIONS.md listing how you answered each open question.
 - Match the contract exactly where clients can see it: paths, status codes, JSON field names and value
   formats (for example money as two-decimal strings), error codes, response headers.
+- If the spec lists screens, also write public/index.html and public/app.js (plain JS, no build step),
+  served by the same service. Same screen addresses, field labels, button names and messages as the
+  spec and the UI probes; layout and styling are yours. UI probes find fields by label and buttons by name.
+- Do not build claims the spec marks as refuted.
 Reply with JSON only: { "files": [ { "path": "src/server.ts", "content": "..." } ] }`;
 
 const read = (p: string) => (fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "");

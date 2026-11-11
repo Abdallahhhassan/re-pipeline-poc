@@ -1,0 +1,341 @@
+{
+  "step": "verify",
+  "order": 4,
+  "n": "7",
+  "title": "Verify",
+  "does": "Runs every finding's probe on a fresh sandbox. Pass makes it Seen, fail refutes it. Routes no finding explains become unknowns.",
+  "status": "ok",
+  "startedAt": "2026-11-11T11:33:05.233Z",
+  "ms": 17875,
+  "tools": [
+    {
+      "name": "Probe runner",
+      "purpose": "runs each rule's test from a fresh state and compares status, body and headers",
+      "where": "pipeline/src/steps/verify.ts (runProbe) + pipeline/src/lib/match.ts"
+    },
+    {
+      "name": "psql",
+      "purpose": "puts the database back to a known state before each run and each test",
+      "where": "reset.command in re.config.yaml"
+    },
+    {
+      "name": "Node fetch",
+      "purpose": "sends each request and records the response; adds a traceparent header so traces can be matched to it",
+      "where": "pipeline/src/lib/scenarios.ts"
+    },
+    {
+      "name": "Node child_process",
+      "purpose": "starts and stops the service under test",
+      "where": "pipeline/src/lib/proc.ts"
+    },
+    {
+      "name": "Playwright (Chrome)",
+      "purpose": "runs each UI rule in a real browser: opens the screen, fills fields by label, clicks, checks the visible text and the API calls",
+      "where": "pipeline/src/steps/verify.ts (runUiProbe) + pipeline/src/lib/browser.ts",
+      "link": "https://playwright.dev"
+    }
+  ],
+  "inputs": [
+    {
+      "label": "Findings to test",
+      "path": "out/analysis/findings.json",
+      "bytes": 36524,
+      "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"wallets-F1\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"flow\",\n      \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"fixture-001\",\n        \"fixture-002\",\n        \"src:demo-target/src/wallets.ts:18-31\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\"\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"USD\",\n            \"balance\": \"0.00\",\n            \"held\": \"0.00\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F2\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"rule\",\n      \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n      \"tag\": \"Inferred\",\n      \"evidence\": [\n        \"fixture-003\",\n        \"src:demo-target/src/wallets.ts:5,23-25\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"GBP\"\n          }\n        },\n        \"expect\": {\n          \"status\": 400,\n          \"body\": {\n            \"error\": \"VALIDATION_ERROR\",\n            \"field\": \"currency\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F3\",\n      \"route\": \"POST /wallets\",\n      \"kin\n…"
+    },
+    {
+      "label": "Traffic (for the coverage check)",
+      "path": "out/capture/recordings.json",
+      "bytes": 17186,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"492e1500-f602-458e-8480-b98f00ed53a3\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.435Z\"\n      }\n    },\n    \"traceId\": \"8675dfd587aa3d4ceee277c560c36e56\",\n    \"ms\": 29\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"6b5514c9-448c-44e4-8953-1caa040a6985\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T11:32:50.451Z\"\n      }\n    },\n    \"traceId\": \"5c7c10b843068ff4862bb9bf8722379d\",\n    \"ms\": 7\n  }\n]\n… 20 more items (22 total)"
+    },
+    {
+      "label": "UI crawl (for the coverage check)",
+      "path": "out/ui/screens.json",
+      "bytes": 3579,
+      "preview": "[\n  {\n    \"id\": \"screen-01\",\n    \"template\": \"/#/wallets\",\n    \"url\": \"http://127.0.0.1:4001/#/wallets\",\n    \"title\": \"Wallets\",\n    \"structure\": \"- main:\\n  - heading \\\"Wallets\\\" [level=1]\\n  - table:\\n    - rowgroup:\\n      - row \\\"Owner Currency Balance On hold\\\":\\n        - columnheader \\\"Owner\\\"\\n        - columnheader \\\"Currency\\\"\\n        - columnheader \\\"Balance\\\"\\n        - columnheader \\\"On hold\\\"\\n        - columnheader\\n    - rowgroup:\\n      - row \\\"alice USD 20,000.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"alice\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"20,000.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\\\"\\n      - row \\\"bob USD 0.00 USD 0.00 USD Send money\\\":\\n        - cell \\\"bob\\\"\\n        - cell \\\"USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"0.00 USD\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\\\"\\n      - row \\\"carol EUR 0.00 EUR 0.00 EUR Send money\\\":\\n        - cell \\\"carol\\\"\\n        - cell \\\"EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"0.00 EUR\\\"\\n        - cell \\\"Send money\\\":\\n          - link \\\"Send money\\\":\\n            - /url: \\\"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\\\"\",\n    \"heading\": \"Wallets\",\n    \"fields\": [],\n    \"buttons\": [],\n    \"links\": [\n      \"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\",\n      \"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\",\n      \"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\"\n    \n…"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Every finding with its verdict",
+      "path": "out/verify/results.json",
+      "bytes": 34974,
+      "preview": "[\n  {\n    \"id\": \"wallets-F1\",\n    \"route\": \"POST /wallets\",\n    \"kind\": \"flow\",\n    \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n    \"tag\": \"Seen\",\n    \"evidence\": [\n      \"fixture-001\",\n      \"fixture-002\",\n      \"src:demo-target/src/wallets.ts:18-31\"\n    ],\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\"\n        }\n      },\n      \"expect\": {\n        \"status\": 201,\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"USD\",\n          \"balance\": \"0.00\",\n          \"held\": \"0.00\"\n        }\n      }\n    },\n    \"area\": \"wallets\",\n    \"claimedTag\": \"Seen\",\n    \"probeResult\": \"pass\"\n  },\n  {\n    \"id\": \"wallets-F2\",\n    \"route\": \"POST /wallets\",\n    \"kind\": \"rule\",\n    \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n    \"tag\": \"Seen\",\n    \"evidence\": [\n      \"fixture-003\",\n      \"src:demo-target/src/wallets.ts:5,23-25\"\n    ],\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"GBP\"\n        }\n      },\n      \"expect\": {\n        \"status\": 400,\n        \"body\": {\n          \"error\": \"VALIDATION_ERROR\",\n          \"field\": \"currency\"\n        }\n      }\n    },\n    \"area\": \"wallets\",\n    \"claimedTag\": \"Inferred\",\n    \"probeResult\": \"pass\"\n  }\n]\n… 42 more items (44 total)"
+    },
+    {
+      "label": "Refuted claims",
+      "path": "out/verify/failed-claims.json",
+      "bytes": 1202,
+      "preview": "[\n  {\n    \"id\": \"ui-F16\",\n    \"route\": \"UI /#/send/:id\",\n    \"kind\": \"rule\",\n    \"claim\": \"The amount field accepts thousands separators, the same way the screen shows money (\\\"1,000\\\" sends 1,000.00).\",\n    \"tag\": \"Inferred\",\n    \"evidence\": [\n      \"ui:screen-02\",\n      \"src:demo-target/public/app.js:4\"\n    ],\n    \"uiProbe\": {\n      \"goto\": \"/#/send/{{alice}}\",\n      \"fill\": {\n        \"To\": \"bob\",\n        \"Amount\": \"1,000\"\n      },\n      \"click\": \"Send money\",\n      \"expect\": {\n        \"text\": \"Sent 1,000.00 USD to bob.\",\n        \"request\": \"POST /transfers 201\"\n      }\n    },\n    \"area\": \"ui\",\n    \"claimedTag\": \"Inferred\",\n    \"probeResult\": \"fail\",\n    \"screenshot\": \"verify/ui/ui-F16.jpg\",\n    \"actual\": {\n      \"url\": \"http://127.0.0.1:4001/#/send/77e50428-b777-4777-9b5a-41aa930a5567\",\n      \"messages\": [\n        \"Enter an amount above 0.\"\n      ],\n      \"requests\": [],\n      \"screenText\": \"Back to wallets\\nSend money\\n\\nFrom alice: 20,000.00 USD available\\n\\nTo\\nbob (USD)\\ncarol (EUR)\\nAmount\\n\\nFee: 1.00 USD\\n\\nSend money\\nEnter an amount above 0.\"\n    },\n    \"problems\": [\n      \"text not shown: \\\"Sent 1,000.00 USD to bob.\\\"\",\n      \"no POST /transfers 201 request\"\n    ]\n  }\n]"
+    },
+    {
+      "label": "Unknowns (analysis + coverage gaps)",
+      "path": "out/verify/unknowns.json",
+      "bytes": 2257,
+      "preview": "[\n  {\n    \"id\": \"wallets-U1\",\n    \"question\": \"Can wallets be closed, renamed or have their currency changed?\",\n    \"why\": \"No endpoint for it was observed or found in the routes.\",\n    \"evidence\": [\n      \"src:demo-target/src/wallets.ts\"\n    ],\n    \"area\": \"wallets\"\n  },\n  {\n    \"id\": \"transfers-U1\",\n    \"question\": \"How does a pending_review transfer get approved or rejected?\",\n    \"why\": \"Funds are held and the receiver is never credited, but no endpoint releases them.\",\n    \"evidence\": [\n      \"src:demo-target/src/transfers.ts:76-81\",\n      \"probe-046\"\n    ],\n    \"area\": \"transfers\"\n  }\n]\n… 5 more items (7 total)"
+    },
+    {
+      "label": "Acceptance suite for the rebuild (passing probes)",
+      "path": "out/verify/suite.json",
+      "bytes": 22426,
+      "preview": "[\n  {\n    \"id\": \"wallets-F1\",\n    \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\"\n        }\n      },\n      \"expect\": {\n        \"status\": 201,\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"USD\",\n          \"balance\": \"0.00\",\n          \"held\": \"0.00\"\n        }\n      }\n    }\n  },\n  {\n    \"id\": \"wallets-F2\",\n    \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n    \"probe\": {\n      \"request\": {\n        \"method\": \"POST\",\n        \"path\": \"/wallets\",\n        \"body\": {\n          \"owner\": \"dave\",\n          \"currency\": \"GBP\"\n        }\n      },\n      \"expect\": {\n        \"status\": 400,\n        \"body\": {\n          \"error\": \"VALIDATION_ERROR\",\n          \"field\": \"currency\"\n        }\n      }\n    }\n  }\n]\n… 40 more items (42 total)"
+    }
+  ],
+  "lines": [
+    {
+      "ms": 2,
+      "level": "info",
+      "msg": "each probe runs on a fresh sandbox: reset data, run the fixtures, run any setup steps, then the probe request"
+    },
+    {
+      "ms": 4,
+      "level": "info",
+      "msg": "start target-verify: node demo-target/dist/server.js"
+    },
+    {
+      "ms": 234,
+      "level": "ok",
+      "msg": "target-verify answering on http://127.0.0.1:4001 after 230ms"
+    },
+    {
+      "ms": 557,
+      "level": "ok",
+      "msg": "wallets-F1: POST /wallets → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 658,
+      "level": "ok",
+      "msg": "wallets-F2: POST /wallets → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 730,
+      "level": "ok",
+      "msg": "wallets-F3: POST /wallets → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 803,
+      "level": "ok",
+      "msg": "wallets-F4: POST /wallets → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 882,
+      "level": "ok",
+      "msg": "wallets-F5: POST /wallets → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 957,
+      "level": "ok",
+      "msg": "wallets-F6: POST /wallets/{{bob}}/deposits → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 1031,
+      "level": "ok",
+      "msg": "wallets-F7: POST /wallets/{{bob}}/deposits → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 1109,
+      "level": "ok",
+      "msg": "wallets-F8: GET /wallets/not-a-uuid → 404 (expected 404 + body fields) → Seen"
+    },
+    {
+      "ms": 1199,
+      "level": "ok",
+      "msg": "transfers-F1: POST /transfers → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 1276,
+      "level": "ok",
+      "msg": "transfers-F2: POST /transfers → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 1352,
+      "level": "ok",
+      "msg": "transfers-F3: POST /transfers → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 1424,
+      "level": "ok",
+      "msg": "transfers-F4: POST /transfers → 201 (expected 201 + body fields) → Seen"
+    },
+    {
+      "ms": 1515,
+      "level": "ok",
+      "msg": "transfers-F5: GET /wallets/{{alice}} → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 1580,
+      "level": "ok",
+      "msg": "transfers-F6: GET /wallets/{{bob}} → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 1654,
+      "level": "ok",
+      "msg": "transfers-F7: GET /wallets/{{alice}} → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 1734,
+      "level": "ok",
+      "msg": "transfers-F8: POST /transfers → 422 (expected 422 + body fields) → Seen"
+    },
+    {
+      "ms": 1812,
+      "level": "ok",
+      "msg": "transfers-F9: POST /transfers → 422 (expected 422 + body fields) → Seen"
+    },
+    {
+      "ms": 1892,
+      "level": "ok",
+      "msg": "transfers-F10: POST /transfers → 422 (expected 422 + body fields) → Seen"
+    },
+    {
+      "ms": 1974,
+      "level": "ok",
+      "msg": "transfers-F11: POST /transfers → 409 (expected 409 + body fields) → Seen"
+    },
+    {
+      "ms": 2044,
+      "level": "ok",
+      "msg": "transfers-F12: POST /transfers → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 2132,
+      "level": "ok",
+      "msg": "transfers-F13: POST /transfers → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 2221,
+      "level": "ok",
+      "msg": "transfers-F14: POST /transfers → 422 (expected 422 + body fields) → Seen"
+    },
+    {
+      "ms": 2310,
+      "level": "ok",
+      "msg": "transfers-F15: POST /transfers → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 2373,
+      "level": "ok",
+      "msg": "transfers-F16: POST /transfers → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 2452,
+      "level": "ok",
+      "msg": "transfers-F17: POST /transfers → 400 (expected 400 + body fields) → Seen"
+    },
+    {
+      "ms": 2519,
+      "level": "ok",
+      "msg": "transfers-F18: POST /transfers → 404 (expected 404 + body fields) → Seen"
+    },
+    {
+      "ms": 2580,
+      "level": "ok",
+      "msg": "transfers-F19: GET /transfers/00000000-0000-4000-8000-000000000000 → 404 (expected 404 + body fields) → Seen"
+    },
+    {
+      "ms": 2580,
+      "level": "warn",
+      "msg": "transfers-F20: no probe, capped at Inferred: Each transfer writes ledger entries: a debit for the amount and a debit for the fee on the sender, plus a credit on the receiver only when completed."
+    },
+    {
+      "ms": 3397,
+      "level": "ok",
+      "msg": "ui-F1: in Chrome: open /#/wallets → (no message) → Seen"
+    },
+    {
+      "ms": 3488,
+      "level": "ok",
+      "msg": "ui-F2: GET /wallets → 200 (expected 200 + body fields) → Seen"
+    },
+    {
+      "ms": 4327,
+      "level": "ok",
+      "msg": "ui-F3: in Chrome: open /#/send/:id → (no message) → Seen"
+    },
+    {
+      "ms": 5213,
+      "level": "ok",
+      "msg": "ui-F4: in Chrome: open /#/send/:id, Amount=\"3000\" → (no message) → Seen"
+    },
+    {
+      "ms": 6077,
+      "level": "ok",
+      "msg": "ui-F5: in Chrome: open /#/send/:id, Amount=\"50\" → (no message) → Seen"
+    },
+    {
+      "ms": 7145,
+      "level": "ok",
+      "msg": "ui-F6: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"0\", click Send money → Enter an amount above 0. → Seen"
+    },
+    {
+      "ms": 8216,
+      "level": "ok",
+      "msg": "ui-F7: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"1.005\", click Send money → Use at most 2 decimals. → Seen"
+    },
+    {
+      "ms": 9318,
+      "level": "ok",
+      "msg": "ui-F8: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"100\", click Send money → Sent 100.00 USD to bob. Fee 1.00 USD. → Seen"
+    },
+    {
+      "ms": 10420,
+      "level": "ok",
+      "msg": "ui-F9: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"5000\", click Send money → Transfer of 5,000.00 USD to bob is waiting for review. Fee 25.00 USD was charged. → Seen"
+    },
+    {
+      "ms": 11582,
+      "level": "ok",
+      "msg": "ui-F10: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"10000.01\", click Send money → Daily limit reached. You can still send 10,000.00 USD today. → Seen"
+    },
+    {
+      "ms": 12680,
+      "level": "ok",
+      "msg": "ui-F11: in Chrome: open /#/send/:id, To=\"carol\", Amount=\"50\", click Send money → Both wallets must use the same currency. → Seen"
+    },
+    {
+      "ms": 13751,
+      "level": "ok",
+      "msg": "ui-F12: in Chrome: open /#/send/:id, To=\"alice\", Amount=\"10\", click Send money → Not enough balance to cover the amount and the fee. → Seen"
+    },
+    {
+      "ms": 14795,
+      "level": "ok",
+      "msg": "ui-F13: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"205\", click Send money → Sent 205.00 USD to bob. Fee 1.03 USD. → Seen"
+    },
+    {
+      "ms": 15860,
+      "level": "ok",
+      "msg": "ui-F14: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"4.35\", click Send money → Check the amount and try again. → Seen"
+    },
+    {
+      "ms": 16698,
+      "level": "ok",
+      "msg": "ui-F15: in Chrome: open /#/send/00000000-0000-4000-8000-000000000000 → (no message) → Seen"
+    },
+    {
+      "ms": 17799,
+      "level": "error",
+      "msg": "ui-F16: in Chrome: open /#/send/:id, To=\"bob\", Amount=\"1,000\", click Send money → Enter an amount above 0. → refuted (text not shown: \"Sent 1,000.00 USD to bob.\"; no POST /transfers 201 request), back to analysis"
+    },
+    {
+      "ms": 17866,
+      "level": "info",
+      "msg": "stop target-verify"
+    },
+    {
+      "ms": 17872,
+      "level": "ok",
+      "msg": "coverage: every traced route and screen (8) is explained by at least one finding"
+    }
+  ],
+  "summary": {
+    "findings": 44,
+    "seen": 42,
+    "failedProbes": [
+      "ui-F16"
+    ],
+    "inferredOnly": 1,
+    "unknowns": 7,
+    "uncoveredRoutes": []
+  }
+}

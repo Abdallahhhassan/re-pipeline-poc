@@ -1,0 +1,86 @@
+[
+  {
+    "id": "screen-01",
+    "template": "/#/wallets",
+    "url": "http://127.0.0.1:4001/#/wallets",
+    "title": "Wallets",
+    "structure": "- main:\n  - heading \"Wallets\" [level=1]\n  - table:\n    - rowgroup:\n      - row \"Owner Currency Balance On hold\":\n        - columnheader \"Owner\"\n        - columnheader \"Currency\"\n        - columnheader \"Balance\"\n        - columnheader \"On hold\"\n        - columnheader\n    - rowgroup:\n      - row \"alice USD 20,000.00 USD 0.00 USD Send money\":\n        - cell \"alice\"\n        - cell \"USD\"\n        - cell \"20,000.00 USD\"\n        - cell \"0.00 USD\"\n        - cell \"Send money\":\n          - link \"Send money\":\n            - /url: \"#/send/7540e47d-00f4-4abc-8642-557d965cbfe2\"\n      - row \"bob USD 0.00 USD 0.00 USD Send money\":\n        - cell \"bob\"\n        - cell \"USD\"\n        - cell \"0.00 USD\"\n        - cell \"0.00 USD\"\n        - cell \"Send money\":\n          - link \"Send money\":\n            - /url: \"#/send/f57ef874-f728-406f-bc45-f814b61f3b1a\"\n      - row \"carol EUR 0.00 EUR 0.00 EUR Send money\":\n        - cell \"carol\"\n        - cell \"EUR\"\n        - cell \"0.00 EUR\"\n        - cell \"0.00 EUR\"\n        - cell \"Send money\":\n          - link \"Send money\":\n            - /url: \"#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999\"",
+    "heading": "Wallets",
+    "fields": [],
+    "buttons": [],
+    "links": [
+      "#/send/7540e47d-00f4-4abc-8642-557d965cbfe2",
+      "#/send/f57ef874-f728-406f-bc45-f814b61f3b1a",
+      "#/send/4c9c961f-c0fd-41e1-87d0-d485f8fe9999"
+    ],
+    "loadCalls": [
+      {
+        "method": "GET",
+        "path": "/wallets",
+        "status": 200,
+        "traceId": "a9982708e2f28787ddd7a4b7c35d7a16",
+        "ms": 10,
+        "route": "/wallets",
+        "sql": [
+          "SELECT * FROM wallets ORDER BY created_at, id"
+        ]
+      }
+    ],
+    "consoleErrors": [],
+    "screenshot": "ui/screens/screen-01.jpg"
+  },
+  {
+    "id": "screen-02",
+    "template": "/#/send/:id",
+    "url": "http://127.0.0.1:4001/#/send/7540e47d-00f4-4abc-8642-557d965cbfe2",
+    "title": "Send money",
+    "structure": "- main:\n  - link \"Back to wallets\":\n    - /url: \"#/wallets\"\n  - heading \"Send money\" [level=1]\n  - paragraph: \"From alice: 20,000.00 USD available\"\n  - text: To\n  - combobox \"To\":\n    - option \"bob (USD)\" [selected]\n    - option \"carol (EUR)\"\n  - text: Amount\n  - textbox \"Amount\"\n  - paragraph: \"Fee: 1.00 USD\"\n  - button \"Send money\"",
+    "heading": "Send money",
+    "fields": [
+      {
+        "label": "To",
+        "kind": "select",
+        "options": [
+          "bob (USD)",
+          "carol (EUR)"
+        ]
+      },
+      {
+        "label": "Amount",
+        "kind": "input text"
+      }
+    ],
+    "buttons": [
+      "Send money"
+    ],
+    "links": [
+      "#/wallets"
+    ],
+    "loadCalls": [
+      {
+        "method": "GET",
+        "path": "/wallets/7540e47d-00f4-4abc-8642-557d965cbfe2",
+        "status": 200,
+        "traceId": "7b680a63eae2880c12440bf486d69235",
+        "ms": 14,
+        "route": "/wallets/:id",
+        "sql": [
+          "SELECT * FROM wallets WHERE id = $1"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/wallets",
+        "status": 200,
+        "traceId": "5d46fb343d0c1003e0e01abbfd7bb7cd",
+        "ms": 15,
+        "route": "/wallets",
+        "sql": [
+          "SELECT * FROM wallets ORDER BY created_at, id"
+        ]
+      }
+    ],
+    "consoleErrors": [],
+    "screenshot": "ui/screens/screen-02.jpg"
+  }
+]

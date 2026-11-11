@@ -213,29 +213,34 @@
   30    res.status(201).json(walletToJson(rows[0]));
   31  });
   32  
-  33  wallets.get("/wallets/:id", async (req, res) => {
-  34    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
-  35    const { rows } = await pool.query("SELECT * FROM wallets WHERE id = $1", [req.params.id]);
-  36    if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
-  37    res.json(walletToJson(rows[0]));
-  38  });
-  39  
-  40  wallets.post("/wallets/:id/deposits", async (req, res) => {
-  41    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
-  42    const amount = parseAmount(req.body?.amount);
-  43    const wallet = await inTx(async (c) => {
-  44      const { rows } = await c.query(
-  45        "UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *",
-  46        [req.params.id, amount],
-  47      );
-  48      if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
-  49      await c.query(
-  50        "INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)",
+  33  wallets.get("/wallets", async (_req, res) => {
+  34    const { rows } = await pool.query("SELECT * FROM wallets ORDER BY created_at, id");
+  35    res.json(rows.map(walletToJson));
+  36  });
+  37  
+  38  wallets.get("/wallets/:id", async (req, res) => {
+  39    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
+  40    const { rows } = await pool.query("SELECT * FROM wallets WHERE id = $1", [req.params.id]);
+  41    if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
+  42    res.json(walletToJson(rows[0]));
+  43  });
+  44  
+  45  wallets.post("/wallets/:id/deposits", async (req, res) => {
+  46    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
+  47    const amount = parseAmount(req.body?.amount);
+  48    const wallet = await inTx(async (c) => {
+  49      const { rows } = await c.query(
+  50        "UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *",
   51        [req.params.id, amount],
   52      );
-  53      return rows[0];
-  54    });
-  55    res.status(201).json({ walletId: wallet.id, balance: wallet.balance });
-  56  });
-  57  
+  53      if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
+  54      await c.query(
+  55        "INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)",
+  56        [req.params.id, amount],
+  57      );
+  58      return rows[0];
+  59    });
+  60    res.status(201).json({ walletId: wallet.id, balance: wallet.balance });
+  61  });
+  62  
 ```

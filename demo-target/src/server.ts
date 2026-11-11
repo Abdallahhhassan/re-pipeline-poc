@@ -1,3 +1,4 @@
+import path from "path";
 import express, { NextFunction, Request, Response } from "express";
 import { ApiError } from "./errors";
 import { wallets } from "./wallets";
@@ -5,6 +6,7 @@ import { transfers } from "./transfers";
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../public")));
 app.use(wallets);
 app.use(transfers);
 

@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "id": "ui-F16",
+    "route": "UI /#/send/:id",
+    "kind": "rule",
+    "claim": "The amount field accepts thousands separators, the same way the screen shows money (\"1,000\" sends 1,000.00).",
+    "tag": "Inferred",
+    "evidence": [
+      "ui:screen-02",
+      "src:demo-target/public/app.js:4"
+    ],
+    "uiProbe": {
+      "goto": "/#/send/{{alice}}",
+      "fill": {
+        "To": "bob",
+        "Amount": "1,000"
+      },
+      "click": "Send money",
+      "expect": {
+        "text": "Sent 1,000.00 USD to bob.",
+        "request": "POST /transfers 201"
+      }
+    },
+    "area": "ui",
+    "claimedTag": "Inferred",
+    "probeResult": "fail",
+    "screenshot": "verify/ui/ui-F16.jpg",
+    "actual": {
+      "url": "http://127.0.0.1:4001/#/send/77e50428-b777-4777-9b5a-41aa930a5567",
+      "messages": [
+        "Enter an amount above 0."
+      ],
+      "requests": [],
+      "screenText": "Back to wallets\nSend money\n\nFrom alice: 20,000.00 USD available\n\nTo\nbob (USD)\ncarol (EUR)\nAmount\n\nFee: 1.00 USD\n\nSend money\nEnter an amount above 0."
+    },
+    "problems": [
+      "text not shown: \"Sent 1,000.00 USD to bob.\"",
+      "no POST /transfers 201 request"
+    ]
+  }
+]

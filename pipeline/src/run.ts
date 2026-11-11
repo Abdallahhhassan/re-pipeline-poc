@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Config, loadConfig, outPath, readJson } from "./config";
 import { capture } from "./steps/capture";
+import { crawl } from "./steps/crawl";
 import { analyze } from "./steps/analyze";
 import { verify } from "./steps/verify";
 import { spec } from "./steps/spec";
@@ -15,17 +16,19 @@ type StepFn = (cfg: Config, flags: Set<string>) => Promise<unknown>;
 /** How each step is presented in logs and in the UI. `n` maps to the whiteboard's step numbers. */
 export const STEP_META: Record<string, { order: number; n: string; title: string; does: string }> = {
   capture: { order: 1, n: "1-5", title: "Capture", does: "Starts the target in the sandbox with tracing injected, runs the scenarios, probes one field at a time from a fresh state, then reads the schema and the source behind the routes. No AI." },
-  analyze: { order: 2, n: "6", title: "Analyze", does: "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe." },
-  verify: { order: 3, n: "7", title: "Verify", does: "Runs every finding's probe on a fresh sandbox. Pass makes it Seen, fail refutes it. Routes no finding explains become unknowns." },
-  spec: { order: 4, n: "8", title: "Spec", does: "Merges verified findings, the observed API contract and open questions into the spec the builder works from." },
-  rebuild: { order: 5, n: "9", title: "Rebuild", does: "Clean room: a builder gets only the spec, contract and acceptance probes, and writes a new service in its own design." },
-  parity: { order: 6, n: "10", title: "Parity", does: "Replays journeys, probes and verified claims on the original and the rebuild from identical fresh states and diffs what clients see." },
-  report: { order: 7, n: "R", title: "Report", does: "Writes one page for people: what is proven, what was refuted, what needs a decision, how close the rebuild is." },
-  site: { order: 8, n: "UI", title: "Results page", does: "Renders this page from the run's outputs." },
+  crawl: { order: 2, n: "3", title: "Crawl the UI", does: "Opens the app in a real browser (Playwright), visits each screen, records its fields, buttons and the API calls it makes, then fills each form with one value changed per try. Every click is traced through to the backend route and SQL. No AI." },
+  analyze: { order: 3, n: "6", title: "Analyze", does: "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe." },
+  verify: { order: 4, n: "7", title: "Verify", does: "Runs every finding's probe on a fresh sandbox. Pass makes it Seen, fail refutes it. Routes no finding explains become unknowns." },
+  spec: { order: 5, n: "8", title: "Spec", does: "Merges verified findings, the observed API contract and open questions into the spec the builder works from." },
+  rebuild: { order: 6, n: "9", title: "Rebuild", does: "Clean room: a builder gets only the spec, contract and acceptance probes, and writes a new service in its own design." },
+  parity: { order: 7, n: "10", title: "Parity", does: "Replays journeys, probes and verified claims on the original and the rebuild from identical fresh states and diffs what clients see." },
+  report: { order: 8, n: "R", title: "Report", does: "Writes one page for people: what is proven, what was refuted, what needs a decision, how close the rebuild is." },
+  site: { order: 9, n: "UI", title: "Results page", does: "Renders this page from the run's outputs." },
 };
 
 const STEPS: Record<string, StepFn> = {
   capture: (cfg) => capture(cfg),
+  crawl: (cfg) => crawl(cfg),
   analyze: (cfg, flags) => analyze(cfg, flags),
   verify: (cfg) => verify(cfg),
   spec: (cfg) => spec(cfg),
@@ -40,6 +43,7 @@ function allSteps(cfg: Config, flags: Set<string>) {
   const hasRebuild = cfg.rebuilt && fs.existsSync(path.resolve(cfg.root, cfg.rebuild.dir, "dist"));
   return [
     "capture",
+    ...(cfg.ui ? ["crawl"] : []),
     "analyze",
     "verify",
     "spec",

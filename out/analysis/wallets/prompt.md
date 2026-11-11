@@ -49,48 +49,48 @@ Routes observed: /wallets, /wallets/:id/deposits, /wallets/:id
 ## Recorded requests
 #### fixture-001 (fixture) create wallet alice
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"alice"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"ff81d856-5253-4813-96e0-3977abbc025d","owner":"alice","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:51:19.227Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"492e1500-f602-458e-8480-b98f00ed53a3","owner":"alice","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T11:32:50.435Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["alice","USD"]
 
 #### fixture-002 (fixture) create wallet bob
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"bob"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","owner":"bob","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:51:19.235Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"6b5514c9-448c-44e4-8953-1caa040a6985","owner":"bob","currency":"USD","balance":"0.00","held":"0.00","createdAt":"2026-11-11T11:32:50.451Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["bob","USD"]
 
 #### fixture-003 (fixture) create EUR wallet carol
 - request: POST /wallets headers={"content-type":"application/json"} body={"owner":"carol","currency":"EUR"}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"410a8569-1b8f-4cf6-9dce-8076ca51d9c0","owner":"carol","currency":"EUR","balance":"0.00","held":"0.00","createdAt":"2026-11-11T09:51:19.240Z"}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"563b0876-2d5d-4875-b34b-caba771a40bf","owner":"carol","currency":"EUR","balance":"0.00","held":"0.00","createdAt":"2026-11-11T11:32:50.456Z"}
 - route: /wallets
 - sql:
     - INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *  values=["carol","EUR"]
 
 #### fixture-004 (fixture) fund alice
-- request: POST /wallets/ff81d856-5253-4813-96e0-3977abbc025d/deposits headers={"content-type":"application/json"} body={"amount":20000}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"walletId":"ff81d856-5253-4813-96e0-3977abbc025d","balance":"20000.00"}
+- request: POST /wallets/492e1500-f602-458e-8480-b98f00ed53a3/deposits headers={"content-type":"application/json"} body={"amount":20000}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"walletId":"492e1500-f602-458e-8480-b98f00ed53a3","balance":"20000.00"}
 - route: /wallets/:id/deposits
 - sql:
     - BEGIN
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *  values=["ff81d856-5253-4813-96e0-3977abbc025d","20000"]
-    - INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)  values=["ff81d856-5253-4813-96e0-3977abbc025d","20000"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *  values=["492e1500-f602-458e-8480-b98f00ed53a3","20000"]
+    - INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)  values=["492e1500-f602-458e-8480-b98f00ed53a3","20000"]
     - COMMIT
 
 #### flow-008 (flow) view sender wallet
-- request: GET /wallets/ff81d856-5253-4813-96e0-3977abbc025d headers={} body=null
-- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"ff81d856-5253-4813-96e0-3977abbc025d","owner":"alice","currency":"USD","balance":"19899.00","held":"0.00","createdAt":"2026-11-11T09:51:19.227Z"}
+- request: GET /wallets/492e1500-f602-458e-8480-b98f00ed53a3 headers={} body=null
+- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"492e1500-f602-458e-8480-b98f00ed53a3","owner":"alice","currency":"USD","balance":"19899.00","held":"0.00","createdAt":"2026-11-11T11:32:50.435Z"}
 - route: /wallets/:id
 - sql:
-    - SELECT * FROM wallets WHERE id = $1  values=["ff81d856-5253-4813-96e0-3977abbc025d"]
+    - SELECT * FROM wallets WHERE id = $1  values=["492e1500-f602-458e-8480-b98f00ed53a3"]
 
 #### flow-009 (flow) view receiver wallet
-- request: GET /wallets/33e8e107-ba17-49eb-a3a0-8188ec4eb983 headers={} body=null
-- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","owner":"bob","currency":"USD","balance":"100.00","held":"0.00","createdAt":"2026-11-11T09:51:19.235Z"}
+- request: GET /wallets/6b5514c9-448c-44e4-8953-1caa040a6985 headers={} body=null
+- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"6b5514c9-448c-44e4-8953-1caa040a6985","owner":"bob","currency":"USD","balance":"100.00","held":"0.00","createdAt":"2026-11-11T11:32:50.451Z"}
 - route: /wallets/:id
 - sql:
-    - SELECT * FROM wallets WHERE id = $1  values=["33e8e107-ba17-49eb-a3a0-8188ec4eb983"]
+    - SELECT * FROM wallets WHERE id = $1  values=["6b5514c9-448c-44e4-8953-1caa040a6985"]
 
 ## Database schema
 ### ledger_entries
@@ -225,29 +225,34 @@ Routes observed: /wallets, /wallets/:id/deposits, /wallets/:id
   30    res.status(201).json(walletToJson(rows[0]));
   31  });
   32  
-  33  wallets.get("/wallets/:id", async (req, res) => {
-  34    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
-  35    const { rows } = await pool.query("SELECT * FROM wallets WHERE id = $1", [req.params.id]);
-  36    if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
-  37    res.json(walletToJson(rows[0]));
-  38  });
-  39  
-  40  wallets.post("/wallets/:id/deposits", async (req, res) => {
-  41    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
-  42    const amount = parseAmount(req.body?.amount);
-  43    const wallet = await inTx(async (c) => {
-  44      const { rows } = await c.query(
-  45        "UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *",
-  46        [req.params.id, amount],
-  47      );
-  48      if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
-  49      await c.query(
-  50        "INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)",
+  33  wallets.get("/wallets", async (_req, res) => {
+  34    const { rows } = await pool.query("SELECT * FROM wallets ORDER BY created_at, id");
+  35    res.json(rows.map(walletToJson));
+  36  });
+  37  
+  38  wallets.get("/wallets/:id", async (req, res) => {
+  39    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
+  40    const { rows } = await pool.query("SELECT * FROM wallets WHERE id = $1", [req.params.id]);
+  41    if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
+  42    res.json(walletToJson(rows[0]));
+  43  });
+  44  
+  45  wallets.post("/wallets/:id/deposits", async (req, res) => {
+  46    if (!isUuid(req.params.id)) throw new ApiError(404, "WALLET_NOT_FOUND");
+  47    const amount = parseAmount(req.body?.amount);
+  48    const wallet = await inTx(async (c) => {
+  49      const { rows } = await c.query(
+  50        "UPDATE wallets SET balance = balance + $2 WHERE id = $1 RETURNING *",
   51        [req.params.id, amount],
   52      );
-  53      return rows[0];
-  54    });
-  55    res.status(201).json({ walletId: wallet.id, balance: wallet.balance });
-  56  });
-  57  
+  53      if (!rows[0]) throw new ApiError(404, "WALLET_NOT_FOUND");
+  54      await c.query(
+  55        "INSERT INTO ledger_entries (wallet_id, direction, kind, amount) VALUES ($1, 'credit', 'deposit', $2)",
+  56        [req.params.id, amount],
+  57      );
+  58      return rows[0];
+  59    });
+  60    res.status(201).json({ walletId: wallet.id, balance: wallet.balance });
+  61  });
+  62  
 ```
