@@ -9,7 +9,7 @@ setup:
 	npm run build:demo
 	-psql $(PG)/postgres -c "create database re_demo" -c "create database re_rebuilt"
 
-## Nightly: capture -> analyze -> verify -> spec -> parity (if a rebuild exists) -> report.
+## Full run: capture -> analyze -> verify -> spec -> parity (if a rebuild exists) -> report.
 re-pipeline:
 	$(RE) all
 

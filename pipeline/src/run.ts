@@ -35,7 +35,7 @@ const STEPS: Record<string, StepFn> = {
   site: (cfg) => site(cfg),
 };
 
-/** The nightly run. Rebuild only runs when asked (--rebuild), because it rewrites code. */
+/** The full run. Rebuild only runs when asked (--rebuild), because it rewrites code. */
 function allSteps(cfg: Config, flags: Set<string>) {
   const hasRebuild = cfg.rebuilt && fs.existsSync(path.resolve(cfg.root, cfg.rebuild.dir, "dist"));
   return [

@@ -50,8 +50,10 @@ make step S=verify         # any single step
 or a Claude session write `findings.json` next to it. `rebuild` writes `out/rebuild/prompt.md`.
 Everything after that is automatic.
 
-**Nightly:** `.github/workflows/re-pipeline.yml` runs the whole thing with a Postgres service,
-uploads `out/`, posts `out/report.md` to the run summary, and deploys `site/` to GitHub Pages.
+**In GitHub Actions:** `.github/workflows/re-pipeline.yml` runs the whole thing on every push to `main`
+and on demand (Actions → re-pipeline → Run workflow), with a Postgres service. It uploads `out/`, posts
+`out/report.md` to the run summary, and deploys `site/` to GitHub Pages. There is no nightly schedule
+while it points at the demo; add one back when it points at a system that changes.
 Add `ANTHROPIC_API_KEY` as a repo secret, and set Settings → Pages → Source to "GitHub Actions".
 
 ## Pointing it at our system

@@ -1,8 +1,10 @@
 name: re-pipeline
 
 on:
-  schedule:
-    - cron: "17 1 * * *" # nightly, 03:17 Cairo time
+  # No schedule while this points at the demo: it never changes, so a nightly run only repeats itself.
+  # When it points at a real system, add back:
+  #   schedule:
+  #     - cron: "17 1 * * *" # nightly, 03:17 Cairo time
   push:
     branches: [main]
   workflow_dispatch: {}
