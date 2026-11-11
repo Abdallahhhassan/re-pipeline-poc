@@ -6,6 +6,7 @@ import { sh, startService } from "../lib/proc";
 import { buildProbes, loadScenarios, Recording, runSteps, send, Step } from "../lib/scenarios";
 import { runProbe } from "./verify";
 import { log } from "../lib/log";
+import { processTool, requestTool, resetTool } from "../lib/tools";
 
 interface Comparison {
   case: string;
@@ -37,6 +38,10 @@ export async function parity(cfg: Config) {
   const scen = loadScenarios(cfg.scenarios);
   const suite = readJson<{ id: string; claim: string; probe: Probe }[]>(outPath(cfg, "verify", "suite.json"));
 
+  log.tool(processTool);
+  log.tool(resetTool(cfg.target));
+  log.tool(requestTool);
+  log.tool({ name: "Response differ", purpose: "masks ids and timestamps, then lists every field that differs between the two services", where: "pipeline/src/lib/match.ts (mask, diff)" });
   log.input("Scenarios (journeys + probe plan)", cfg.scenarios);
   log.input("Acceptance suite (verified probes)", outPath(cfg, "verify", "suite.json"));
   log.input("Masked fields and accepted differences", undefined, `ignore: ${cfg.parity.ignoreFields.join(", ")}\naccepted: ${cfg.parity.accepted.map((a) => a.case).join("; ") || "none"}`);

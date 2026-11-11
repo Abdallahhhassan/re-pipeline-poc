@@ -5,6 +5,7 @@ import { partialMatch } from "../lib/match";
 import { sh, startService } from "../lib/proc";
 import { loadScenarios, Recording, runSteps, send } from "../lib/scenarios";
 import { log } from "../lib/log";
+import { processTool, requestTool, resetTool } from "../lib/tools";
 
 export interface ProbeOutcome {
   passed: boolean;
@@ -39,6 +40,10 @@ export async function verify(cfg: Config) {
   const recordings = readJson<Recording[]>(outPath(cfg, "capture", "recordings.json"));
   const traces = readJson<RequestTrace[]>(outPath(cfg, "capture", "traces.json"));
 
+  log.tool({ name: "Probe runner", purpose: "runs each rule's test from a fresh state and compares status, body and headers", where: "pipeline/src/steps/verify.ts (runProbe) + pipeline/src/lib/match.ts" });
+  log.tool(resetTool(cfg.target));
+  log.tool(requestTool);
+  log.tool(processTool);
   log.input("Findings to test", outPath(cfg, "analysis", "findings.json"));
   log.input("Traffic (for the coverage check)", outPath(cfg, "capture", "recordings.json"));
   log.info(`each probe runs on a fresh sandbox: reset data, run the fixtures, run any setup steps, then the probe request`);

@@ -55,6 +55,8 @@ export async function spec(cfg: Config) {
   const unknowns = readJson<Unknown[]>(outPath(cfg, "verify", "unknowns.json"));
   const recordings = readJson<Recording[]>(outPath(cfg, "capture", "recordings.json"));
   const traces = readJson<RequestTrace[]>(outPath(cfg, "capture", "traces.json"));
+  log.tool({ name: "Contract builder", purpose: "derives fields, statuses and tables touched per route from the recorded traffic and traces", where: "pipeline/src/steps/spec.ts (buildContract)" });
+  log.tool({ name: "Spec writer", purpose: "turns verified rules and open questions into the markdown spec", where: "pipeline/src/steps/spec.ts" });
   log.input("Verified findings", outPath(cfg, "verify", "results.json"));
   log.input("Unknowns", outPath(cfg, "verify", "unknowns.json"));
   log.input("Traffic and traces (for the contract)", outPath(cfg, "capture", "recordings.json"));

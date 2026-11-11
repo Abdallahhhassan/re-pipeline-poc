@@ -19,16 +19,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "10033d43-2075-48db-b2b1-cea295f29d0a",
+        "id": "ff81d856-5253-4813-96e0-3977abbc025d",
         "owner": "alice",
         "currency": "USD",
         "balance": "0.00",
         "held": "0.00",
-        "createdAt": "2026-11-11T09:41:49.211Z"
+        "createdAt": "2026-11-11T09:51:19.227Z"
       }
     },
-    "traceId": "46c9671251392f08d4764c36b485af14",
-    "ms": 33
+    "traceId": "d2e5f379c37c363edd299b001b427423",
+    "ms": 24
   },
   {
     "id": "fixture-002",
@@ -50,16 +50,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "id": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "owner": "bob",
         "currency": "USD",
         "balance": "0.00",
         "held": "0.00",
-        "createdAt": "2026-11-11T09:41:49.222Z"
+        "createdAt": "2026-11-11T09:51:19.235Z"
       }
     },
-    "traceId": "8c430208de2f0f2fb566b527f1b2d334",
-    "ms": 6
+    "traceId": "7aba10d8763b94383920624def3f172e",
+    "ms": 4
   },
   {
     "id": "fixture-003",
@@ -82,16 +82,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "b8d9a559-70b7-409a-81ce-dbe70a9ed374",
+        "id": "410a8569-1b8f-4cf6-9dce-8076ca51d9c0",
         "owner": "carol",
         "currency": "EUR",
         "balance": "0.00",
         "held": "0.00",
-        "createdAt": "2026-11-11T09:41:49.228Z"
+        "createdAt": "2026-11-11T09:51:19.240Z"
       }
     },
-    "traceId": "e3d2d9c23b08cfcd7a8bb7a548996237",
-    "ms": 7
+    "traceId": "4aec9b125f424469ec712b8279b1fa96",
+    "ms": 5
   },
   {
     "id": "fixture-004",
@@ -99,7 +99,7 @@
     "name": "fund alice",
     "request": {
       "method": "POST",
-      "path": "/wallets/10033d43-2075-48db-b2b1-cea295f29d0a/deposits",
+      "path": "/wallets/ff81d856-5253-4813-96e0-3977abbc025d/deposits",
       "headers": {
         "content-type": "application/json"
       },
@@ -113,12 +113,12 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "walletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
+        "walletId": "ff81d856-5253-4813-96e0-3977abbc025d",
         "balance": "20000.00"
       }
     },
-    "traceId": "9f01d72638647cdb2f36bfd99ddaea70",
-    "ms": 13
+    "traceId": "158749d0a95e784f7b555d9a0d33918c",
+    "ms": 11
   },
   {
     "id": "flow-005",
@@ -132,8 +132,8 @@
         "Idempotency-Key": "flow-1"
       },
       "body": {
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "amount": 100
       }
     },
@@ -143,17 +143,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "amount": "100.00",
         "fee": "1.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.250Z"
+        "createdAt": "2026-11-11T09:51:19.258Z"
       }
     },
-    "traceId": "151b8cb13edc3f9d8e9d872b8e9e302a",
-    "ms": 16
+    "traceId": "6a243f3dd1c7b9ca56dc78e83774779b",
+    "ms": 15
   },
   {
     "id": "flow-006",
@@ -167,8 +167,8 @@
         "Idempotency-Key": "flow-1"
       },
       "body": {
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "amount": 100
       }
     },
@@ -179,16 +179,16 @@
         "idempotent-replay": "true"
       },
       "body": {
-        "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "amount": "100.00",
         "fee": "1.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.250Z"
+        "createdAt": "2026-11-11T09:51:19.258Z"
       }
     },
-    "traceId": "860594503faf568a173c5b68e2b3a34d",
+    "traceId": "4fd32ff5ab7900bb28abe40d7570fec9",
     "ms": 5
   },
   {
@@ -197,7 +197,7 @@
     "name": "view transfer",
     "request": {
       "method": "GET",
-      "path": "/transfers/adec99b5-6351-4b19-852a-ad4be91fce86",
+      "path": "/transfers/5848fde8-94a0-4478-a209-7b68985de2fc",
       "headers": {},
       "body": null
     },
@@ -207,17 +207,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "amount": "100.00",
         "fee": "1.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.250Z"
+        "createdAt": "2026-11-11T09:51:19.258Z"
       }
     },
-    "traceId": "09876cdd598c88f6afb4bfe3443533aa",
-    "ms": 3
+    "traceId": "02f53edce5793f1ae9a7908cee096807",
+    "ms": 8
   },
   {
     "id": "flow-008",
@@ -225,7 +225,7 @@
     "name": "view sender wallet",
     "request": {
       "method": "GET",
-      "path": "/wallets/10033d43-2075-48db-b2b1-cea295f29d0a",
+      "path": "/wallets/ff81d856-5253-4813-96e0-3977abbc025d",
       "headers": {},
       "body": null
     },
@@ -235,16 +235,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "10033d43-2075-48db-b2b1-cea295f29d0a",
+        "id": "ff81d856-5253-4813-96e0-3977abbc025d",
         "owner": "alice",
         "currency": "USD",
         "balance": "19899.00",
         "held": "0.00",
-        "createdAt": "2026-11-11T09:41:49.211Z"
+        "createdAt": "2026-11-11T09:51:19.227Z"
       }
     },
-    "traceId": "af3c83d4d48587979bd99e871eac720b",
-    "ms": 5
+    "traceId": "6053a347bab1ab6faf0c38303adb09d8",
+    "ms": 4
   },
   {
     "id": "flow-009",
@@ -252,7 +252,7 @@
     "name": "view receiver wallet",
     "request": {
       "method": "GET",
-      "path": "/wallets/7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+      "path": "/wallets/33e8e107-ba17-49eb-a3a0-8188ec4eb983",
       "headers": {},
       "body": null
     },
@@ -262,16 +262,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+        "id": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
         "owner": "bob",
         "currency": "USD",
         "balance": "100.00",
         "held": "0.00",
-        "createdAt": "2026-11-11T09:41:49.222Z"
+        "createdAt": "2026-11-11T09:51:19.235Z"
       }
     },
-    "traceId": "2523bf36c0afcb9a82d4a464b7dd612b",
-    "ms": 3
+    "traceId": "7f91dcf59a8bdd11a160d930f52ee3bc",
+    "ms": 4
   },
   {
     "id": "flow-010",
@@ -284,8 +284,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-        "toWalletId": "b8d9a559-70b7-409a-81ce-dbe70a9ed374",
+        "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+        "toWalletId": "410a8569-1b8f-4cf6-9dce-8076ca51d9c0",
         "amount": 50
       }
     },
@@ -298,7 +298,7 @@
         "error": "CURRENCY_MISMATCH"
       }
     },
-    "traceId": "54c6af0b04328dcbf6a47a1e3573aee1",
+    "traceId": "5956f4e9dcbced3c232ac55fb1a4573b",
     "ms": 7
   },
   {
@@ -312,8 +312,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
-        "toWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
+        "fromWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
+        "toWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
         "amount": 500
       }
     },
@@ -326,7 +326,7 @@
         "error": "INSUFFICIENT_FUNDS"
       }
     },
-    "traceId": "cb69d865219ad27e7759793a9e894826",
+    "traceId": "94ccc7cb7247bf34a69b46ba24e237a6",
     "ms": 6
   },
   {
@@ -340,8 +340,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "d9bed69c-ff5e-4024-8cb3-f90167b3d5ad",
-        "toWalletId": "c8458d30-fc8b-4722-abbe-4691fd4d6d43",
+        "fromWalletId": "73206dd3-6dd2-47b8-aeef-3b7c1ba584c9",
+        "toWalletId": "d411e4d2-98a1-460e-8b41-75030fa5ea95",
         "amount": 0
       }
     },
@@ -355,8 +355,8 @@
         "field": "amount"
       }
     },
-    "traceId": "797ce42763d5f3f9bcd99304f279818f",
-    "ms": 4
+    "traceId": "7ab1883a09d354bb70d462d74e1881b7",
+    "ms": 3
   },
   {
     "id": "probe-021",
@@ -369,8 +369,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "959bb7a8-01b6-4f9c-b289-72c9744c7581",
-        "toWalletId": "06261ff2-dc64-4b55-b84e-294c41390ff6",
+        "fromWalletId": "c8010d35-e524-4a49-a4a9-e67fd4cfbf64",
+        "toWalletId": "14ede9fd-308d-47e7-874d-960368927f3c",
         "amount": -5
       }
     },
@@ -384,8 +384,8 @@
         "field": "amount"
       }
     },
-    "traceId": "43602f0b332136d7d75c6e7512f97787",
-    "ms": 4
+    "traceId": "ece9b3176e6126db93e09cd0005fd560",
+    "ms": 2
   },
   {
     "id": "probe-026",
@@ -398,8 +398,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "a31f1795-7a31-4ed0-aa72-6a8a6bd412c6",
-        "toWalletId": "10096bb5-6df4-4534-9fb5-ef22072bff06",
+        "fromWalletId": "154720cb-ea21-47fc-8fb5-95921713e296",
+        "toWalletId": "d5599244-a776-4829-b624-b02477b7bdb9",
         "amount": 0.005
       }
     },
@@ -414,8 +414,8 @@
         "reason": "max 2 decimals"
       }
     },
-    "traceId": "ef304782d07d31ec331ceda5fd9aa2ee",
-    "ms": 4
+    "traceId": "12d167675898a95ab61c7ad9623492d5",
+    "ms": 3
   },
   {
     "id": "probe-031",
@@ -428,8 +428,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "60f50e6c-1e32-4fd5-aa80-25e31369d7d8",
-        "toWalletId": "6c81dd93-b645-4cf8-b650-a839aa78c5f6",
+        "fromWalletId": "44c7263b-4b46-4b4b-a058-5877d06546c0",
+        "toWalletId": "4a31fa0e-f231-4a6b-a632-a71eb560ad0c",
         "amount": 1.5
       }
     },
@@ -439,16 +439,16 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "fc0a4b36-f400-4ac4-a18b-add83cdfca7a",
-        "fromWalletId": "60f50e6c-1e32-4fd5-aa80-25e31369d7d8",
-        "toWalletId": "6c81dd93-b645-4cf8-b650-a839aa78c5f6",
+        "id": "927b0353-d4ba-4b5a-96af-a490937d6e96",
+        "fromWalletId": "44c7263b-4b46-4b4b-a058-5877d06546c0",
+        "toWalletId": "4a31fa0e-f231-4a6b-a632-a71eb560ad0c",
         "amount": "1.50",
         "fee": "1.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.675Z"
+        "createdAt": "2026-11-11T09:51:19.622Z"
       }
     },
-    "traceId": "14766ad8586c304a48eb9cf84cd65871",
+    "traceId": "5b7dbb9cfaef3c7b751cfadf457d1d9c",
     "ms": 9
   },
   {
@@ -462,8 +462,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "71e029e7-0a97-48e0-b8eb-9f703cbebbf6",
-        "toWalletId": "05182c67-db5b-4dd2-b429-b5cc6fce25e9",
+        "fromWalletId": "211d564c-4f92-42bd-b2d3-42154b76d6d8",
+        "toWalletId": "7d33475c-5fbc-41fc-9f11-be4800234751",
         "amount": 199.99
       }
     },
@@ -473,17 +473,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "5dfdc495-436c-4e9f-b0a1-79ed3bb738e0",
-        "fromWalletId": "71e029e7-0a97-48e0-b8eb-9f703cbebbf6",
-        "toWalletId": "05182c67-db5b-4dd2-b429-b5cc6fce25e9",
+        "id": "2fd674f4-500d-4cc2-8bb9-c0507b6ea39d",
+        "fromWalletId": "211d564c-4f92-42bd-b2d3-42154b76d6d8",
+        "toWalletId": "7d33475c-5fbc-41fc-9f11-be4800234751",
         "amount": "199.99",
         "fee": "1.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.777Z"
+        "createdAt": "2026-11-11T09:51:19.699Z"
       }
     },
-    "traceId": "3557a6804d3d08e7ee7d7193c64fcf3f",
-    "ms": 7
+    "traceId": "6e87b4b2c397c9666b8774a1257cfced",
+    "ms": 9
   },
   {
     "id": "probe-041",
@@ -496,8 +496,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "7252c155-38bf-4d03-a6eb-987ce879fff0",
-        "toWalletId": "60ad4517-83c2-490a-81f3-4057f2f50b62",
+        "fromWalletId": "59c5df86-7e84-41a6-a79e-9b10b91c141d",
+        "toWalletId": "256512ec-746e-424c-b70b-f58f4c38bdf7",
         "amount": 4999.99
       }
     },
@@ -507,17 +507,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "ac06acd6-0763-4166-8664-31129dd38bdf",
-        "fromWalletId": "7252c155-38bf-4d03-a6eb-987ce879fff0",
-        "toWalletId": "60ad4517-83c2-490a-81f3-4057f2f50b62",
+        "id": "cac329c2-38fd-4265-b69e-e8da7dd53536",
+        "fromWalletId": "59c5df86-7e84-41a6-a79e-9b10b91c141d",
+        "toWalletId": "256512ec-746e-424c-b70b-f58f4c38bdf7",
         "amount": "4999.99",
         "fee": "25.00",
         "status": "completed",
-        "createdAt": "2026-11-11T09:41:49.882Z"
+        "createdAt": "2026-11-11T09:51:19.772Z"
       }
     },
-    "traceId": "e5316501443b566b11c2f1fe492705cd",
-    "ms": 13
+    "traceId": "06fd4a9b2c3daab2a9d727e3a23911ea",
+    "ms": 7
   },
   {
     "id": "probe-046",
@@ -530,8 +530,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "6fb04686-1819-46b6-81d5-f9d1b2faa2be",
-        "toWalletId": "ce532132-8ede-49b2-b857-ae334e2d6123",
+        "fromWalletId": "02a58837-1517-4a51-a939-63254eeae863",
+        "toWalletId": "3038f07b-bb70-4a58-be9a-0a84f0c4cd89",
         "amount": 5000
       }
     },
@@ -541,17 +541,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "3e26fa79-ff3a-499c-83f6-aa054bfe2e9b",
-        "fromWalletId": "6fb04686-1819-46b6-81d5-f9d1b2faa2be",
-        "toWalletId": "ce532132-8ede-49b2-b857-ae334e2d6123",
+        "id": "be6e8d17-7666-400a-ba74-adbca85705ad",
+        "fromWalletId": "02a58837-1517-4a51-a939-63254eeae863",
+        "toWalletId": "3038f07b-bb70-4a58-be9a-0a84f0c4cd89",
         "amount": "5000.00",
         "fee": "25.00",
         "status": "pending_review",
-        "createdAt": "2026-11-11T09:41:49.983Z"
+        "createdAt": "2026-11-11T09:51:19.844Z"
       }
     },
-    "traceId": "0ef4f0aa40ade20309b3646056310f6c",
-    "ms": 11
+    "traceId": "388315f30340b88b2335ce793f9d6467",
+    "ms": 6
   },
   {
     "id": "probe-051",
@@ -564,8 +564,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "be282d86-56ef-49e3-9ee1-6b1f9876ea60",
-        "toWalletId": "c0bff80f-2148-4eae-815d-433c2af0a812",
+        "fromWalletId": "f6719079-fe46-4ac1-9b7f-ffc821229e95",
+        "toWalletId": "06561f49-288b-413c-8d06-4f4746a24a68",
         "amount": 10000
       }
     },
@@ -575,17 +575,17 @@
         "content-type": "application/json; charset=utf-8"
       },
       "body": {
-        "id": "4088b401-dfbd-4500-b2e5-13e2313dc812",
-        "fromWalletId": "be282d86-56ef-49e3-9ee1-6b1f9876ea60",
-        "toWalletId": "c0bff80f-2148-4eae-815d-433c2af0a812",
+        "id": "db48b26b-0d45-4da7-8baa-cab95240ce58",
+        "fromWalletId": "f6719079-fe46-4ac1-9b7f-ffc821229e95",
+        "toWalletId": "06561f49-288b-413c-8d06-4f4746a24a68",
         "amount": "10000.00",
         "fee": "50.00",
         "status": "pending_review",
-        "createdAt": "2026-11-11T09:41:50.081Z"
+        "createdAt": "2026-11-11T09:51:19.909Z"
       }
     },
-    "traceId": "0c7f27a80b47d7cbf1c086c1735e75ee",
-    "ms": 9
+    "traceId": "f81f810a08bae92865aaf540e47a3ad2",
+    "ms": 7
   },
   {
     "id": "probe-056",
@@ -598,8 +598,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "5f5931ad-ed9a-4536-bbb1-d0dc3d4da5db",
-        "toWalletId": "6ae9d6a7-6a37-48cf-9059-be4f114af865",
+        "fromWalletId": "1cba0d5a-e7d4-407f-a6fa-bb302dfbb081",
+        "toWalletId": "4f5d5faf-b941-4aa1-a367-388e84f270ca",
         "amount": 10000.01
       }
     },
@@ -613,8 +613,8 @@
         "remaining": 10000
       }
     },
-    "traceId": "c10993ae5bc234a9c9ddce136ec53ad5",
-    "ms": 5
+    "traceId": "269afa1f3d71d57634f6cd5838120026",
+    "ms": 4
   },
   {
     "id": "probe-061",
@@ -627,8 +627,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "70202b41-cd81-4fa7-a1ce-6b307b851a38",
-        "toWalletId": "8a85e4f8-9e05-44b5-9c6f-27323ffaeba8",
+        "fromWalletId": "61bfde3e-7b37-4e9a-8daa-ca39be66533f",
+        "toWalletId": "d0977fc3-a9d3-4e57-b496-e4cbc6fb809a",
         "amount": "100"
       }
     },
@@ -642,8 +642,8 @@
         "field": "amount"
       }
     },
-    "traceId": "d12cbb6f8c2eba2d245af14b7bbbc1c3",
-    "ms": 2
+    "traceId": "c87a5e4302d102d7ed27148db7a0ae70",
+    "ms": 3
   },
   {
     "id": "probe-066",
@@ -656,8 +656,8 @@
         "content-type": "application/json"
       },
       "body": {
-        "fromWalletId": "4ce3932e-1551-465b-a294-34a5f4704f92",
-        "toWalletId": "2e54d343-329d-463a-81e8-50dc45dbdb17",
+        "fromWalletId": "4746f469-fb0b-4a69-a7fb-fe467e31a36e",
+        "toWalletId": "e147b9e1-f4f2-4e71-a328-dec97153c017",
         "amount": 4.35
       }
     },
@@ -672,7 +672,7 @@
         "reason": "max 2 decimals"
       }
     },
-    "traceId": "f2b2a9b530c49a8985c02b14b520213d",
-    "ms": 2
+    "traceId": "b99c4c2486c4c73e4f87d7467879a270",
+    "ms": 3
   }
 ]

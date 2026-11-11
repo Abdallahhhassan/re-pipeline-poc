@@ -9,6 +9,14 @@ export interface IO {
   preview?: string;
 }
 
+/** A tool the step used: what it is, what it was used for, and where it lives in this repo or outside it. */
+export interface Tool {
+  name: string;
+  purpose: string;
+  where?: string;
+  link?: string;
+}
+
 export interface LogLine {
   ms: number; // since the step started
   level: "info" | "ok" | "warn" | "error";
@@ -23,6 +31,7 @@ export interface StepRun {
   status: "ok" | "error";
   startedAt: string;
   ms: number;
+  tools: Tool[];
   inputs: IO[];
   outputs: IO[];
   lines: LogLine[];
@@ -75,12 +84,16 @@ export const log = {
   input: (label: string, file?: string, value?: string) =>
     current?.inputs.push(value !== undefined ? { label, preview: value } : io(label, file)),
   output: (label: string, file: string) => current?.outputs.push(io(label, file)),
+  /** Records a tool the step used, once per step. */
+  tool: (t: Tool) => {
+    if (current && !current.tools.some((x) => x.name === t.name)) current.tools.push(t);
+  },
 };
 
 export function beginStep(meta: { step: string; n: string; title: string; does: string }, projectRoot: string) {
   root = projectRoot;
   started = Date.now();
-  current = { ...meta, status: "ok", startedAt: new Date().toISOString(), ms: 0, inputs: [], outputs: [], lines: [] };
+  current = { ...meta, status: "ok", startedAt: new Date().toISOString(), ms: 0, tools: [], inputs: [], outputs: [], lines: [] };
 }
 
 /** Closes the step and saves its record to out/runlog/<order>-<step>.json. */

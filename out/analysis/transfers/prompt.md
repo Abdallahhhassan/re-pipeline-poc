@@ -48,161 +48,161 @@ Routes observed: /transfers, /transfers/:id
 
 ## Recorded requests
 #### flow-005 (flow) send money
-- request: POST /transfers headers={"content-type":"application/json","Idempotency-Key":"flow-1"} body={"fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","amount":100}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"adec99b5-6351-4b19-852a-ad4be91fce86","fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:41:49.250Z"}
+- request: POST /transfers headers={"content-type":"application/json","Idempotency-Key":"flow-1"} body={"fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","amount":100}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"5848fde8-94a0-4478-a209-7b68985de2fc","fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:51:19.258Z"}
 - route: /transfers
 - sql:
     - SELECT * FROM transfers WHERE idempotency_key = $1  values=["flow-1"]
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"10033d43-2075-48db-b2b1-cea295f29d0a\",\"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["10033d43-2075-48db-b2b1-cea295f29d0a"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["10033d43-2075-48db-b2b1-cea295f29d0a","7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","100","1","completed","flow-1"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["adec99b5-6351-4b19-852a-ad4be91fce86","10033d43-2075-48db-b2b1-cea295f29d0a","100","1"]
-    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["10033d43-2075-48db-b2b1-cea295f29d0a","101"]
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","100"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["adec99b5-6351-4b19-852a-ad4be91fce86","7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","100"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"ff81d856-5253-4813-96e0-3977abbc025d\",\"33e8e107-ba17-49eb-a3a0-8188ec4eb983\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["ff81d856-5253-4813-96e0-3977abbc025d"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["ff81d856-5253-4813-96e0-3977abbc025d","33e8e107-ba17-49eb-a3a0-8188ec4eb983","100","1","completed","flow-1"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["5848fde8-94a0-4478-a209-7b68985de2fc","ff81d856-5253-4813-96e0-3977abbc025d","100","1"]
+    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["ff81d856-5253-4813-96e0-3977abbc025d","101"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["33e8e107-ba17-49eb-a3a0-8188ec4eb983","100"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["5848fde8-94a0-4478-a209-7b68985de2fc","33e8e107-ba17-49eb-a3a0-8188ec4eb983","100"]
     - COMMIT
 
 #### flow-006 (flow) retry the same request
-- request: POST /transfers headers={"content-type":"application/json","Idempotency-Key":"flow-1"} body={"fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","amount":100}
-- response: 200 headers={"content-type":"application/json; charset=utf-8","idempotent-replay":"true"} body={"id":"adec99b5-6351-4b19-852a-ad4be91fce86","fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:41:49.250Z"}
+- request: POST /transfers headers={"content-type":"application/json","Idempotency-Key":"flow-1"} body={"fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","amount":100}
+- response: 200 headers={"content-type":"application/json; charset=utf-8","idempotent-replay":"true"} body={"id":"5848fde8-94a0-4478-a209-7b68985de2fc","fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:51:19.258Z"}
 - route: /transfers
 - sql:
     - SELECT * FROM transfers WHERE idempotency_key = $1  values=["flow-1"]
 
 #### flow-007 (flow) view transfer
-- request: GET /transfers/adec99b5-6351-4b19-852a-ad4be91fce86 headers={} body=null
-- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"adec99b5-6351-4b19-852a-ad4be91fce86","fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:41:49.250Z"}
+- request: GET /transfers/5848fde8-94a0-4478-a209-7b68985de2fc headers={} body=null
+- response: 200 headers={"content-type":"application/json; charset=utf-8"} body={"id":"5848fde8-94a0-4478-a209-7b68985de2fc","fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","amount":"100.00","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:51:19.258Z"}
 - route: /transfers/:id
 - sql:
-    - SELECT * FROM transfers WHERE id = $1  values=["adec99b5-6351-4b19-852a-ad4be91fce86"]
+    - SELECT * FROM transfers WHERE id = $1  values=["5848fde8-94a0-4478-a209-7b68985de2fc"]
 
 #### flow-010 (flow) send to EUR wallet
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","toWalletId":"b8d9a559-70b7-409a-81ce-dbe70a9ed374","amount":50}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","toWalletId":"410a8569-1b8f-4cf6-9dce-8076ca51d9c0","amount":50}
 - response: 422 headers={"content-type":"application/json; charset=utf-8"} body={"error":"CURRENCY_MISMATCH"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"10033d43-2075-48db-b2b1-cea295f29d0a\",\"b8d9a559-70b7-409a-81ce-dbe70a9ed374\"]"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"ff81d856-5253-4813-96e0-3977abbc025d\",\"410a8569-1b8f-4cf6-9dce-8076ca51d9c0\"]"]
     - ROLLBACK
 
 #### flow-011 (flow) bob sends more than he has
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf","toWalletId":"10033d43-2075-48db-b2b1-cea295f29d0a","amount":500}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"33e8e107-ba17-49eb-a3a0-8188ec4eb983","toWalletId":"ff81d856-5253-4813-96e0-3977abbc025d","amount":500}
 - response: 409 headers={"content-type":"application/json; charset=utf-8"} body={"error":"INSUFFICIENT_FUNDS"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf\",\"10033d43-2075-48db-b2b1-cea295f29d0a\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["7b86dd2e-7e8a-4428-8065-c5564ad2b7bf"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\"ff81d856-5253-4813-96e0-3977abbc025d\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["33e8e107-ba17-49eb-a3a0-8188ec4eb983"]
     - ROLLBACK
 
 #### probe-016 (probe) send money [amount=0]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"d9bed69c-ff5e-4024-8cb3-f90167b3d5ad","toWalletId":"c8458d30-fc8b-4722-abbe-4691fd4d6d43","amount":0}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"73206dd3-6dd2-47b8-aeef-3b7c1ba584c9","toWalletId":"d411e4d2-98a1-460e-8b41-75030fa5ea95","amount":0}
 - response: 400 headers={"content-type":"application/json; charset=utf-8"} body={"error":"VALIDATION_ERROR","field":"amount"}
 - route: /transfers
 - sql: none
 
 #### probe-021 (probe) send money [amount=-5]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"959bb7a8-01b6-4f9c-b289-72c9744c7581","toWalletId":"06261ff2-dc64-4b55-b84e-294c41390ff6","amount":-5}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"c8010d35-e524-4a49-a4a9-e67fd4cfbf64","toWalletId":"14ede9fd-308d-47e7-874d-960368927f3c","amount":-5}
 - response: 400 headers={"content-type":"application/json; charset=utf-8"} body={"error":"VALIDATION_ERROR","field":"amount"}
 - route: /transfers
 - sql: none
 
 #### probe-026 (probe) send money [amount=0.005]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"a31f1795-7a31-4ed0-aa72-6a8a6bd412c6","toWalletId":"10096bb5-6df4-4534-9fb5-ef22072bff06","amount":0.005}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"154720cb-ea21-47fc-8fb5-95921713e296","toWalletId":"d5599244-a776-4829-b624-b02477b7bdb9","amount":0.005}
 - response: 400 headers={"content-type":"application/json; charset=utf-8"} body={"error":"VALIDATION_ERROR","field":"amount","reason":"max 2 decimals"}
 - route: /transfers
 - sql: none
 
 #### probe-031 (probe) send money [amount=1.5]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"60f50e6c-1e32-4fd5-aa80-25e31369d7d8","toWalletId":"6c81dd93-b645-4cf8-b650-a839aa78c5f6","amount":1.5}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"fc0a4b36-f400-4ac4-a18b-add83cdfca7a","fromWalletId":"60f50e6c-1e32-4fd5-aa80-25e31369d7d8","toWalletId":"6c81dd93-b645-4cf8-b650-a839aa78c5f6","amount":"1.50","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:41:49.675Z"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"44c7263b-4b46-4b4b-a058-5877d06546c0","toWalletId":"4a31fa0e-f231-4a6b-a632-a71eb560ad0c","amount":1.5}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"927b0353-d4ba-4b5a-96af-a490937d6e96","fromWalletId":"44c7263b-4b46-4b4b-a058-5877d06546c0","toWalletId":"4a31fa0e-f231-4a6b-a632-a71eb560ad0c","amount":"1.50","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:51:19.622Z"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"60f50e6c-1e32-4fd5-aa80-25e31369d7d8\",\"6c81dd93-b645-4cf8-b650-a839aa78c5f6\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["60f50e6c-1e32-4fd5-aa80-25e31369d7d8"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["60f50e6c-1e32-4fd5-aa80-25e31369d7d8","6c81dd93-b645-4cf8-b650-a839aa78c5f6","1.5","1","completed","null"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["fc0a4b36-f400-4ac4-a18b-add83cdfca7a","60f50e6c-1e32-4fd5-aa80-25e31369d7d8","1.5","1"]
-    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["60f50e6c-1e32-4fd5-aa80-25e31369d7d8","2.5"]
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["6c81dd93-b645-4cf8-b650-a839aa78c5f6","1.5"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["fc0a4b36-f400-4ac4-a18b-add83cdfca7a","6c81dd93-b645-4cf8-b650-a839aa78c5f6","1.5"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"44c7263b-4b46-4b4b-a058-5877d06546c0\",\"4a31fa0e-f231-4a6b-a632-a71eb560ad0c\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["44c7263b-4b46-4b4b-a058-5877d06546c0"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["44c7263b-4b46-4b4b-a058-5877d06546c0","4a31fa0e-f231-4a6b-a632-a71eb560ad0c","1.5","1","completed","null"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["927b0353-d4ba-4b5a-96af-a490937d6e96","44c7263b-4b46-4b4b-a058-5877d06546c0","1.5","1"]
+    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["44c7263b-4b46-4b4b-a058-5877d06546c0","2.5"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["4a31fa0e-f231-4a6b-a632-a71eb560ad0c","1.5"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["927b0353-d4ba-4b5a-96af-a490937d6e96","4a31fa0e-f231-4a6b-a632-a71eb560ad0c","1.5"]
     - COMMIT
 
 #### probe-036 (probe) send money [amount=199.99]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"71e029e7-0a97-48e0-b8eb-9f703cbebbf6","toWalletId":"05182c67-db5b-4dd2-b429-b5cc6fce25e9","amount":199.99}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"5dfdc495-436c-4e9f-b0a1-79ed3bb738e0","fromWalletId":"71e029e7-0a97-48e0-b8eb-9f703cbebbf6","toWalletId":"05182c67-db5b-4dd2-b429-b5cc6fce25e9","amount":"199.99","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:41:49.777Z"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"211d564c-4f92-42bd-b2d3-42154b76d6d8","toWalletId":"7d33475c-5fbc-41fc-9f11-be4800234751","amount":199.99}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"2fd674f4-500d-4cc2-8bb9-c0507b6ea39d","fromWalletId":"211d564c-4f92-42bd-b2d3-42154b76d6d8","toWalletId":"7d33475c-5fbc-41fc-9f11-be4800234751","amount":"199.99","fee":"1.00","status":"completed","createdAt":"2026-11-11T09:51:19.699Z"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"71e029e7-0a97-48e0-b8eb-9f703cbebbf6\",\"05182c67-db5b-4dd2-b429-b5cc6fce25e9\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["71e029e7-0a97-48e0-b8eb-9f703cbebbf6"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["71e029e7-0a97-48e0-b8eb-9f703cbebbf6","05182c67-db5b-4dd2-b429-b5cc6fce25e9","199.99","1","completed","null"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["5dfdc495-436c-4e9f-b0a1-79ed3bb738e0","71e029e7-0a97-48e0-b8eb-9f703cbebbf6","199.99","1"]
-    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["71e029e7-0a97-48e0-b8eb-9f703cbebbf6","200.99"]
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["05182c67-db5b-4dd2-b429-b5cc6fce25e9","199.99"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["5dfdc495-436c-4e9f-b0a1-79ed3bb738e0","05182c67-db5b-4dd2-b429-b5cc6fce25e9","199.99"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"211d564c-4f92-42bd-b2d3-42154b76d6d8\",\"7d33475c-5fbc-41fc-9f11-be4800234751\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["211d564c-4f92-42bd-b2d3-42154b76d6d8"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["211d564c-4f92-42bd-b2d3-42154b76d6d8","7d33475c-5fbc-41fc-9f11-be4800234751","199.99","1","completed","null"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["2fd674f4-500d-4cc2-8bb9-c0507b6ea39d","211d564c-4f92-42bd-b2d3-42154b76d6d8","199.99","1"]
+    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["211d564c-4f92-42bd-b2d3-42154b76d6d8","200.99"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["7d33475c-5fbc-41fc-9f11-be4800234751","199.99"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["2fd674f4-500d-4cc2-8bb9-c0507b6ea39d","7d33475c-5fbc-41fc-9f11-be4800234751","199.99"]
     - COMMIT
 
 #### probe-041 (probe) send money [amount=4999.99]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"7252c155-38bf-4d03-a6eb-987ce879fff0","toWalletId":"60ad4517-83c2-490a-81f3-4057f2f50b62","amount":4999.99}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"ac06acd6-0763-4166-8664-31129dd38bdf","fromWalletId":"7252c155-38bf-4d03-a6eb-987ce879fff0","toWalletId":"60ad4517-83c2-490a-81f3-4057f2f50b62","amount":"4999.99","fee":"25.00","status":"completed","createdAt":"2026-11-11T09:41:49.882Z"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"59c5df86-7e84-41a6-a79e-9b10b91c141d","toWalletId":"256512ec-746e-424c-b70b-f58f4c38bdf7","amount":4999.99}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"cac329c2-38fd-4265-b69e-e8da7dd53536","fromWalletId":"59c5df86-7e84-41a6-a79e-9b10b91c141d","toWalletId":"256512ec-746e-424c-b70b-f58f4c38bdf7","amount":"4999.99","fee":"25.00","status":"completed","createdAt":"2026-11-11T09:51:19.772Z"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"7252c155-38bf-4d03-a6eb-987ce879fff0\",\"60ad4517-83c2-490a-81f3-4057f2f50b62\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["7252c155-38bf-4d03-a6eb-987ce879fff0"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["7252c155-38bf-4d03-a6eb-987ce879fff0","60ad4517-83c2-490a-81f3-4057f2f50b62","4999.99","25","completed","null"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["ac06acd6-0763-4166-8664-31129dd38bdf","7252c155-38bf-4d03-a6eb-987ce879fff0","4999.99","25"]
-    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["7252c155-38bf-4d03-a6eb-987ce879fff0","5024.99"]
-    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["60ad4517-83c2-490a-81f3-4057f2f50b62","4999.99"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["ac06acd6-0763-4166-8664-31129dd38bdf","60ad4517-83c2-490a-81f3-4057f2f50b62","4999.99"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"59c5df86-7e84-41a6-a79e-9b10b91c141d\",\"256512ec-746e-424c-b70b-f58f4c38bdf7\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["59c5df86-7e84-41a6-a79e-9b10b91c141d"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["59c5df86-7e84-41a6-a79e-9b10b91c141d","256512ec-746e-424c-b70b-f58f4c38bdf7","4999.99","25","completed","null"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["cac329c2-38fd-4265-b69e-e8da7dd53536","59c5df86-7e84-41a6-a79e-9b10b91c141d","4999.99","25"]
+    - UPDATE wallets SET balance = balance - $2 WHERE id = $1  values=["59c5df86-7e84-41a6-a79e-9b10b91c141d","5024.99"]
+    - UPDATE wallets SET balance = balance + $2 WHERE id = $1  values=["256512ec-746e-424c-b70b-f58f4c38bdf7","4999.99"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'credit', 'transfer', $3)  values=["cac329c2-38fd-4265-b69e-e8da7dd53536","256512ec-746e-424c-b70b-f58f4c38bdf7","4999.99"]
     - COMMIT
 
 #### probe-046 (probe) send money [amount=5000]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"6fb04686-1819-46b6-81d5-f9d1b2faa2be","toWalletId":"ce532132-8ede-49b2-b857-ae334e2d6123","amount":5000}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"3e26fa79-ff3a-499c-83f6-aa054bfe2e9b","fromWalletId":"6fb04686-1819-46b6-81d5-f9d1b2faa2be","toWalletId":"ce532132-8ede-49b2-b857-ae334e2d6123","amount":"5000.00","fee":"25.00","status":"pending_review","createdAt":"2026-11-11T09:41:49.983Z"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"02a58837-1517-4a51-a939-63254eeae863","toWalletId":"3038f07b-bb70-4a58-be9a-0a84f0c4cd89","amount":5000}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"be6e8d17-7666-400a-ba74-adbca85705ad","fromWalletId":"02a58837-1517-4a51-a939-63254eeae863","toWalletId":"3038f07b-bb70-4a58-be9a-0a84f0c4cd89","amount":"5000.00","fee":"25.00","status":"pending_review","createdAt":"2026-11-11T09:51:19.844Z"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"6fb04686-1819-46b6-81d5-f9d1b2faa2be\",\"ce532132-8ede-49b2-b857-ae334e2d6123\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["6fb04686-1819-46b6-81d5-f9d1b2faa2be"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["6fb04686-1819-46b6-81d5-f9d1b2faa2be","ce532132-8ede-49b2-b857-ae334e2d6123","5000","25","pending_review","null"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["3e26fa79-ff3a-499c-83f6-aa054bfe2e9b","6fb04686-1819-46b6-81d5-f9d1b2faa2be","5000","25"]
-    - UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1  values=["6fb04686-1819-46b6-81d5-f9d1b2faa2be","5025","5000"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"02a58837-1517-4a51-a939-63254eeae863\",\"3038f07b-bb70-4a58-be9a-0a84f0c4cd89\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["02a58837-1517-4a51-a939-63254eeae863"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["02a58837-1517-4a51-a939-63254eeae863","3038f07b-bb70-4a58-be9a-0a84f0c4cd89","5000","25","pending_review","null"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["be6e8d17-7666-400a-ba74-adbca85705ad","02a58837-1517-4a51-a939-63254eeae863","5000","25"]
+    - UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1  values=["02a58837-1517-4a51-a939-63254eeae863","5025","5000"]
     - COMMIT
 
 #### probe-051 (probe) send money [amount=10000]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"be282d86-56ef-49e3-9ee1-6b1f9876ea60","toWalletId":"c0bff80f-2148-4eae-815d-433c2af0a812","amount":10000}
-- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"4088b401-dfbd-4500-b2e5-13e2313dc812","fromWalletId":"be282d86-56ef-49e3-9ee1-6b1f9876ea60","toWalletId":"c0bff80f-2148-4eae-815d-433c2af0a812","amount":"10000.00","fee":"50.00","status":"pending_review","createdAt":"2026-11-11T09:41:50.081Z"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"f6719079-fe46-4ac1-9b7f-ffc821229e95","toWalletId":"06561f49-288b-413c-8d06-4f4746a24a68","amount":10000}
+- response: 201 headers={"content-type":"application/json; charset=utf-8"} body={"id":"db48b26b-0d45-4da7-8baa-cab95240ce58","fromWalletId":"f6719079-fe46-4ac1-9b7f-ffc821229e95","toWalletId":"06561f49-288b-413c-8d06-4f4746a24a68","amount":"10000.00","fee":"50.00","status":"pending_review","createdAt":"2026-11-11T09:51:19.909Z"}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"be282d86-56ef-49e3-9ee1-6b1f9876ea60\",\"c0bff80f-2148-4eae-815d-433c2af0a812\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["be282d86-56ef-49e3-9ee1-6b1f9876ea60"]
-    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["be282d86-56ef-49e3-9ee1-6b1f9876ea60","c0bff80f-2148-4eae-815d-433c2af0a812","10000","50","pending_review","null"]
-    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["4088b401-dfbd-4500-b2e5-13e2313dc812","be282d86-56ef-49e3-9ee1-6b1f9876ea60","10000","50"]
-    - UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1  values=["be282d86-56ef-49e3-9ee1-6b1f9876ea60","10050","10000"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"f6719079-fe46-4ac1-9b7f-ffc821229e95\",\"06561f49-288b-413c-8d06-4f4746a24a68\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["f6719079-fe46-4ac1-9b7f-ffc821229e95"]
+    - INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, fee, status, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *  values=["f6719079-fe46-4ac1-9b7f-ffc821229e95","06561f49-288b-413c-8d06-4f4746a24a68","10000","50","pending_review","null"]
+    - INSERT INTO ledger_entries (transfer_id, wallet_id, direction, kind, amount) VALUES ($1, $2, 'debit', 'transfer', $3), ($1, $2, 'debit', 'fee', $4)  values=["db48b26b-0d45-4da7-8baa-cab95240ce58","f6719079-fe46-4ac1-9b7f-ffc821229e95","10000","50"]
+    - UPDATE wallets SET balance = balance - $2, held = held + $3 WHERE id = $1  values=["f6719079-fe46-4ac1-9b7f-ffc821229e95","10050","10000"]
     - COMMIT
 
 #### probe-056 (probe) send money [amount=10000.01]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"5f5931ad-ed9a-4536-bbb1-d0dc3d4da5db","toWalletId":"6ae9d6a7-6a37-48cf-9059-be4f114af865","amount":10000.01}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"1cba0d5a-e7d4-407f-a6fa-bb302dfbb081","toWalletId":"4f5d5faf-b941-4aa1-a367-388e84f270ca","amount":10000.01}
 - response: 422 headers={"content-type":"application/json; charset=utf-8"} body={"error":"LIMIT_EXCEEDED","remaining":10000}
 - route: /transfers
 - sql:
     - BEGIN
-    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"5f5931ad-ed9a-4536-bbb1-d0dc3d4da5db\",\"6ae9d6a7-6a37-48cf-9059-be4f114af865\"]"]
-    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["5f5931ad-ed9a-4536-bbb1-d0dc3d4da5db"]
+    - SELECT * FROM wallets WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE  values=["[\"1cba0d5a-e7d4-407f-a6fa-bb302dfbb081\",\"4f5d5faf-b941-4aa1-a367-388e84f270ca\"]"]
+    - SELECT COALESCE(SUM(amount), 0) AS total FROM transfers WHERE from_wallet_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'  values=["1cba0d5a-e7d4-407f-a6fa-bb302dfbb081"]
     - ROLLBACK
 
 #### probe-061 (probe) send money [amount="100"]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"70202b41-cd81-4fa7-a1ce-6b307b851a38","toWalletId":"8a85e4f8-9e05-44b5-9c6f-27323ffaeba8","amount":"100"}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"61bfde3e-7b37-4e9a-8daa-ca39be66533f","toWalletId":"d0977fc3-a9d3-4e57-b496-e4cbc6fb809a","amount":"100"}
 - response: 400 headers={"content-type":"application/json; charset=utf-8"} body={"error":"VALIDATION_ERROR","field":"amount"}
 - route: /transfers
 - sql: none
 
 #### probe-066 (probe) send money [amount=4.35]
-- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"4ce3932e-1551-465b-a294-34a5f4704f92","toWalletId":"2e54d343-329d-463a-81e8-50dc45dbdb17","amount":4.35}
+- request: POST /transfers headers={"content-type":"application/json"} body={"fromWalletId":"4746f469-fb0b-4a69-a7fb-fe467e31a36e","toWalletId":"e147b9e1-f4f2-4e71-a328-dec97153c017","amount":4.35}
 - response: 400 headers={"content-type":"application/json; charset=utf-8"} body={"error":"VALIDATION_ERROR","field":"amount","reason":"max 2 decimals"}
 - route: /transfers
 - sql: none

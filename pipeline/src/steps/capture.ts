@@ -5,6 +5,7 @@ import { log } from "../lib/log";
 import { startService, sh } from "../lib/proc";
 import { buildProbes, loadScenarios, Recording, runSteps, send } from "../lib/scenarios";
 import { dumpSchema, linkTraces, numbered, readSpans, sliceSource } from "../lib/evidence";
+import { processTool, requestTool, resetTool } from "../lib/tools";
 
 /**
  * Steps 1-5 of the pipeline, no AI involved:
@@ -20,6 +21,17 @@ export async function capture(cfg: Config) {
   log.input("Scenarios", cfg.scenarios);
   log.input("Probe plan", undefined, `fields: ${cfg.probes.fields.join(", ")}\nvalues: ${JSON.stringify(cfg.probes.values)}\n=> ${probes.length} probes, each from a fresh state`);
   const recordings: Recording[] = [];
+  log.tool(resetTool(cfg.target));
+  log.tool(processTool);
+  if (cfg.target.tracing === "node-auto") {
+    log.tool({
+      name: "OpenTelemetry Node SDK + auto-instrumentations",
+      purpose: "injected with NODE_OPTIONS, traces every request through http, express and pg, and writes each span to a file",
+      where: "pipeline/src/otel/register.cjs",
+      link: "https://opentelemetry.io/docs/languages/js/",
+    });
+  }
+  log.tool(requestTool);
 
   sh(cfg, cfg.target.reset.command);
   const svc = await startService(cfg, cfg.target, {
@@ -45,6 +57,7 @@ export async function capture(cfg: Config) {
     await svc.stop();
   }
 
+  log.tool({ name: "Trace linker", purpose: "groups spans by trace id and pulls out each request's route and SQL", where: "pipeline/src/lib/evidence.ts (linkTraces)" });
   const spans = readSpans(traceFile);
   const traces = linkTraces(recordings, spans);
   log.ok(`linked ${spans.length} spans to ${traces.filter((t) => t.spans > 0).length} of ${recordings.length} requests through their traceparent ids`);
@@ -57,6 +70,7 @@ export async function capture(cfg: Config) {
   log.info(`routes seen: ${routes.join(", ")}`);
   let schema = "";
   if (cfg.target.database) {
+    log.tool({ name: "node-postgres (pg)", purpose: "reads tables, columns and constraints from the live database", where: "pipeline/src/lib/evidence.ts (dumpSchema)", link: "https://node-postgres.com" });
     schema = await dumpSchema(cfg.target.database.url);
     fs.writeFileSync(outPath(cfg, "capture", "schema.md"), schema + "\n");
     log.ok(`schema read from the live database: ${(schema.match(/^### /gm) ?? []).length} tables`);
@@ -64,6 +78,7 @@ export async function capture(cfg: Config) {
   }
   let files: { file: string; content: string }[] = [];
   if (cfg.target.source) {
+    log.tool({ name: "Source slicer", purpose: "finds the files that mention each route and follows their imports", where: "pipeline/src/lib/evidence.ts (sliceSource)" });
     files = sliceSource(cfg.target.source.dir, cfg.target.source.extensions, routes);
     fs.writeFileSync(
       outPath(cfg, "capture", "code-slice.md"),

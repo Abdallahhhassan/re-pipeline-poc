@@ -5,8 +5,30 @@
   "title": "Parity",
   "does": "Replays journeys, probes and verified claims on the original and the rebuild from identical fresh states and diffs what clients see.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:41:52.952Z",
-  "ms": 7606,
+  "startedAt": "2026-11-11T09:51:22.326Z",
+  "ms": 6345,
+  "tools": [
+    {
+      "name": "Node child_process",
+      "purpose": "starts and stops the service under test",
+      "where": "pipeline/src/lib/proc.ts"
+    },
+    {
+      "name": "psql",
+      "purpose": "puts the database back to a known state before each run and each test",
+      "where": "reset.command in re.config.yaml"
+    },
+    {
+      "name": "Node fetch",
+      "purpose": "sends each request and records the response; adds a traceparent header so traces can be matched to it",
+      "where": "pipeline/src/lib/scenarios.ts"
+    },
+    {
+      "name": "Response differ",
+      "purpose": "masks ids and timestamps, then lists every field that differs between the two services",
+      "where": "pipeline/src/lib/match.ts (mask, diff)"
+    }
+  ],
   "inputs": [
     {
       "label": "Scenarios (journeys + probe plan)",
@@ -46,277 +68,277 @@
       "msg": "start parity-original: node demo-target/dist/server.js"
     },
     {
-      "ms": 219,
+      "ms": 216,
       "level": "ok",
-      "msg": "parity-original answering on http://127.0.0.1:4001 after 216ms"
+      "msg": "parity-original answering on http://127.0.0.1:4001 after 213ms"
     },
     {
-      "ms": 220,
+      "ms": 216,
       "level": "info",
       "msg": "start parity-rebuilt: node rebuilt/dist/server.js"
     },
     {
-      "ms": 435,
+      "ms": 428,
       "level": "ok",
-      "msg": "parity-rebuilt answering on http://127.0.0.1:4002 after 215ms"
+      "msg": "parity-rebuilt answering on http://127.0.0.1:4002 after 211ms"
     },
     {
-      "ms": 736,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: create wallet alice: POST /wallets → original 201, rebuild 201"
     },
     {
-      "ms": 736,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: create wallet bob: POST /wallets → original 201, rebuild 201"
     },
     {
-      "ms": 736,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: create EUR wallet carol: POST /wallets → original 201, rebuild 201"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: fund alice: POST /wallets/:id/deposits → original 201, rebuild 201"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: send money: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: retry the same request: POST /transfers → original 200, rebuild 200"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: view transfer: GET /transfers/:id → original 200, rebuild 200"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: view sender wallet: GET /wallets/:id → original 200, rebuild 200"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: view receiver wallet: GET /wallets/:id → original 200, rebuild 200"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: send to EUR wallet: POST /transfers → original 422, rebuild 422"
     },
     {
-      "ms": 737,
+      "ms": 654,
       "level": "ok",
       "msg": "journey: bob sends more than he has: POST /transfers → original 409, rebuild 409"
     },
     {
-      "ms": 911,
+      "ms": 828,
       "level": "ok",
       "msg": "probe: send money [amount=0]: POST /transfers → original 400, rebuild 400"
     },
     {
-      "ms": 1045,
+      "ms": 964,
       "level": "ok",
       "msg": "probe: send money [amount=-5]: POST /transfers → original 400, rebuild 400"
     },
     {
-      "ms": 1205,
+      "ms": 1089,
       "level": "ok",
       "msg": "probe: send money [amount=0.005]: POST /transfers → original 400, rebuild 400"
     },
     {
-      "ms": 1418,
+      "ms": 1203,
       "level": "ok",
       "msg": "probe: send money [amount=1.5]: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 1607,
+      "ms": 1328,
       "level": "ok",
       "msg": "probe: send money [amount=199.99]: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 1812,
+      "ms": 1466,
       "level": "ok",
       "msg": "probe: send money [amount=4999.99]: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 2019,
+      "ms": 1601,
       "level": "ok",
       "msg": "probe: send money [amount=5000]: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 2245,
+      "ms": 1737,
       "level": "ok",
       "msg": "probe: send money [amount=10000]: POST /transfers → original 201, rebuild 201"
     },
     {
-      "ms": 2410,
+      "ms": 1897,
       "level": "ok",
       "msg": "probe: send money [amount=10000.01]: POST /transfers → original 422, rebuild 422"
     },
     {
-      "ms": 2567,
+      "ms": 2029,
       "level": "ok",
       "msg": "probe: send money [amount=\"100\"]: POST /transfers → original 400, rebuild 400"
     },
     {
-      "ms": 2729,
+      "ms": 2152,
       "level": "warn",
       "msg": "probe: send money [amount=4.35]: POST /transfers → original 400, rebuild 201: 11 differences"
     },
     {
-      "ms": 2893,
+      "ms": 2303,
       "level": "ok",
       "msg": "claim wallets-F1: original 201, rebuild 201"
     },
     {
-      "ms": 3069,
+      "ms": 2428,
       "level": "ok",
       "msg": "claim wallets-F2: original 400, rebuild 400"
     },
     {
-      "ms": 3249,
+      "ms": 2570,
       "level": "ok",
       "msg": "claim wallets-F3: original 400, rebuild 400"
     },
     {
-      "ms": 3421,
+      "ms": 2696,
       "level": "ok",
       "msg": "claim wallets-F4: original 400, rebuild 400"
     },
     {
-      "ms": 3614,
+      "ms": 2828,
       "level": "ok",
       "msg": "claim wallets-F5: original 201, rebuild 201"
     },
     {
-      "ms": 3809,
+      "ms": 2964,
       "level": "ok",
       "msg": "claim wallets-F6: original 201, rebuild 201"
     },
     {
-      "ms": 3973,
+      "ms": 3089,
       "level": "ok",
       "msg": "claim wallets-F7: original 400, rebuild 400"
     },
     {
-      "ms": 4157,
+      "ms": 3214,
       "level": "ok",
       "msg": "claim wallets-F8: original 404, rebuild 404"
     },
     {
-      "ms": 4367,
+      "ms": 3342,
       "level": "ok",
       "msg": "claim transfers-F1: original 201, rebuild 201"
     },
     {
-      "ms": 4569,
+      "ms": 3510,
       "level": "ok",
       "msg": "claim transfers-F2: original 201, rebuild 201"
     },
     {
-      "ms": 4763,
+      "ms": 3677,
       "level": "ok",
       "msg": "claim transfers-F3: original 201, rebuild 201"
     },
     {
-      "ms": 5005,
+      "ms": 3857,
       "level": "ok",
       "msg": "claim transfers-F4: original 201, rebuild 201"
     },
     {
-      "ms": 5201,
+      "ms": 4035,
       "level": "ok",
       "msg": "claim transfers-F5: original 200, rebuild 200"
     },
     {
-      "ms": 5394,
+      "ms": 4186,
       "level": "ok",
       "msg": "claim transfers-F6: original 200, rebuild 200"
     },
     {
-      "ms": 5565,
+      "ms": 4344,
       "level": "ok",
       "msg": "claim transfers-F7: original 200, rebuild 200"
     },
     {
-      "ms": 5750,
+      "ms": 4551,
       "level": "ok",
       "msg": "claim transfers-F8: original 422, rebuild 422"
     },
     {
-      "ms": 5955,
+      "ms": 4730,
       "level": "ok",
       "msg": "claim transfers-F9: original 422, rebuild 422"
     },
     {
-      "ms": 6132,
+      "ms": 4895,
       "level": "ok",
       "msg": "claim transfers-F10: original 422, rebuild 422"
     },
     {
-      "ms": 6283,
+      "ms": 5061,
       "level": "ok",
       "msg": "claim transfers-F11: original 409, rebuild 409"
     },
     {
-      "ms": 6459,
+      "ms": 5270,
       "level": "ok",
       "msg": "claim transfers-F12: original 200, rebuild 200"
     },
     {
-      "ms": 6622,
+      "ms": 5424,
       "level": "ok",
       "msg": "claim transfers-F13: original 200, rebuild 200"
     },
     {
-      "ms": 6806,
+      "ms": 5583,
       "level": "ok",
       "msg": "claim transfers-F14: original 422, rebuild 422"
     },
     {
-      "ms": 6969,
+      "ms": 5754,
       "level": "ok",
       "msg": "claim transfers-F15: original 400, rebuild 400"
     },
     {
-      "ms": 7116,
+      "ms": 5893,
       "level": "ok",
       "msg": "claim transfers-F16: original 400, rebuild 400"
     },
     {
-      "ms": 7269,
+      "ms": 6024,
       "level": "ok",
       "msg": "claim transfers-F17: original 400, rebuild 400"
     },
     {
-      "ms": 7422,
+      "ms": 6175,
       "level": "ok",
       "msg": "claim transfers-F18: original 404, rebuild 404"
     },
     {
-      "ms": 7592,
+      "ms": 6335,
       "level": "ok",
       "msg": "claim transfers-F19: original 404, rebuild 404"
     },
     {
-      "ms": 7593,
+      "ms": 6335,
       "level": "info",
       "msg": "stop parity-original"
     },
     {
-      "ms": 7598,
+      "ms": 6340,
       "level": "info",
       "msg": "stop parity-rebuilt"
     },
     {
-      "ms": 7605,
+      "ms": 6345,
       "level": "info",
       "msg": "49 cases: 48 match, 1 accepted, 0 open"
     }

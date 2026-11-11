@@ -5,8 +5,20 @@
   "title": "Spec",
   "does": "Merges verified findings, the observed API contract and open questions into the spec the builder works from.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:41:52.948Z",
+  "startedAt": "2026-11-11T09:51:22.322Z",
   "ms": 4,
+  "tools": [
+    {
+      "name": "Contract builder",
+      "purpose": "derives fields, statuses and tables touched per route from the recorded traffic and traces",
+      "where": "pipeline/src/steps/spec.ts (buildContract)"
+    },
+    {
+      "name": "Spec writer",
+      "purpose": "turns verified rules and open questions into the markdown spec",
+      "where": "pipeline/src/steps/spec.ts"
+    }
+  ],
   "inputs": [
     {
       "label": "Verified findings",
@@ -23,8 +35,8 @@
     {
       "label": "Traffic and traces (for the contract)",
       "path": "out/capture/recordings.json",
-      "bytes": 17187,
-      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"10033d43-2075-48db-b2b1-cea295f29d0a\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.211Z\"\n      }\n    },\n    \"traceId\": \"46c9671251392f08d4764c36b485af14\",\n    \"ms\": 33\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.222Z\"\n      }\n    },\n    \"traceId\": \"8c430208de2f0f2fb566b527f1b2d334\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
+      "bytes": 17185,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.227Z\"\n      }\n    },\n    \"traceId\": \"d2e5f379c37c363edd299b001b427423\",\n    \"ms\": 24\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.235Z\"\n      }\n    },\n    \"traceId\": \"7aba10d8763b94383920624def3f172e\",\n    \"ms\": 4\n  }\n]\n… 20 more items (22 total)"
     }
   ],
   "outputs": [
@@ -38,7 +50,7 @@
       "label": "Observed API contract",
       "path": "out/spec/contract.json",
       "bytes": 5471,
-      "preview": "[\n  {\n    \"route\": \"POST /wallets\",\n    \"requestFields\": {\n      \"owner\": \"string\",\n      \"currency\": \"string\"\n    },\n    \"requestHeaders\": [],\n    \"responses\": {\n      \"201\": {\n        \"fields\": {\n          \"id\": \"string\",\n          \"owner\": \"string\",\n          \"currency\": \"string\",\n          \"balance\": \"string\",\n          \"held\": \"string\",\n          \"createdAt\": \"string\"\n        },\n        \"headers\": [\n          \"content-type\"\n        ],\n        \"example\": {\n          \"id\": \"10033d43-2075-48db-b2b1-cea295f29d0a\",\n          \"owner\": \"alice\",\n          \"currency\": \"USD\",\n          \"balance\": \"0.00\",\n          \"held\": \"0.00\",\n          \"createdAt\": \"2026-11-11T09:41:49.211Z\"\n        }\n      }\n    },\n    \"tablesRead\": [],\n    \"tablesWritten\": [\n      \"wallets\"\n    ]\n  },\n  {\n    \"route\": \"POST /wallets/:id/deposits\",\n    \"requestFields\": {\n      \"amount\": \"number\"\n    },\n    \"requestHeaders\": [],\n    \"responses\": {\n      \"201\": {\n        \"fields\": {\n          \"walletId\": \"string\",\n          \"balance\": \"string\"\n        },\n        \"headers\": [\n          \"content-type\"\n        ],\n        \"example\": {\n          \"walletId\": \"10033d43-2075-48db-b2b1-cea295f29d0a\",\n          \"balance\": \"20000.00\"\n        }\n      }\n    },\n    \"tablesRead\": [],\n    \"tablesWritten\": [\n      \"wallets\",\n      \"ledger_entries\"\n    ]\n  }\n]\n… 3 more items (5 total)"
+      "preview": "[\n  {\n    \"route\": \"POST /wallets\",\n    \"requestFields\": {\n      \"owner\": \"string\",\n      \"currency\": \"string\"\n    },\n    \"requestHeaders\": [],\n    \"responses\": {\n      \"201\": {\n        \"fields\": {\n          \"id\": \"string\",\n          \"owner\": \"string\",\n          \"currency\": \"string\",\n          \"balance\": \"string\",\n          \"held\": \"string\",\n          \"createdAt\": \"string\"\n        },\n        \"headers\": [\n          \"content-type\"\n        ],\n        \"example\": {\n          \"id\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n          \"owner\": \"alice\",\n          \"currency\": \"USD\",\n          \"balance\": \"0.00\",\n          \"held\": \"0.00\",\n          \"createdAt\": \"2026-11-11T09:51:19.227Z\"\n        }\n      }\n    },\n    \"tablesRead\": [],\n    \"tablesWritten\": [\n      \"wallets\"\n    ]\n  },\n  {\n    \"route\": \"POST /wallets/:id/deposits\",\n    \"requestFields\": {\n      \"amount\": \"number\"\n    },\n    \"requestHeaders\": [],\n    \"responses\": {\n      \"201\": {\n        \"fields\": {\n          \"walletId\": \"string\",\n          \"balance\": \"string\"\n        },\n        \"headers\": [\n          \"content-type\"\n        ],\n        \"example\": {\n          \"walletId\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n          \"balance\": \"20000.00\"\n        }\n      }\n    },\n    \"tablesRead\": [],\n    \"tablesWritten\": [\n      \"wallets\",\n      \"ledger_entries\"\n    ]\n  }\n]\n… 3 more items (5 total)"
     },
     {
       "label": "Unknowns checklist",
@@ -49,12 +61,12 @@
   ],
   "lines": [
     {
-      "ms": 2,
+      "ms": 3,
       "level": "ok",
       "msg": "contract: 5 routes with fields, statuses and tables touched"
     },
     {
-      "ms": 3,
+      "ms": 4,
       "level": "ok",
       "msg": "spec: 27 verified rules, 1 not yet proven, 5 open questions"
     }

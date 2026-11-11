@@ -20,12 +20,12 @@
           "content-type"
         ],
         "example": {
-          "id": "10033d43-2075-48db-b2b1-cea295f29d0a",
+          "id": "ff81d856-5253-4813-96e0-3977abbc025d",
           "owner": "alice",
           "currency": "USD",
           "balance": "0.00",
           "held": "0.00",
-          "createdAt": "2026-11-11T09:41:49.211Z"
+          "createdAt": "2026-11-11T09:51:19.227Z"
         }
       }
     },
@@ -50,7 +50,7 @@
           "content-type"
         ],
         "example": {
-          "walletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
+          "walletId": "ff81d856-5253-4813-96e0-3977abbc025d",
           "balance": "20000.00"
         }
       }
@@ -87,13 +87,13 @@
           "idempotent-replay"
         ],
         "example": {
-          "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-          "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-          "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+          "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+          "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+          "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
           "amount": "100.00",
           "fee": "1.00",
           "status": "completed",
-          "createdAt": "2026-11-11T09:41:49.250Z"
+          "createdAt": "2026-11-11T09:51:19.258Z"
         }
       },
       "201": {
@@ -110,13 +110,13 @@
           "content-type"
         ],
         "example": {
-          "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-          "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-          "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+          "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+          "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+          "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
           "amount": "100.00",
           "fee": "1.00",
           "status": "completed",
-          "createdAt": "2026-11-11T09:41:49.250Z"
+          "createdAt": "2026-11-11T09:51:19.258Z"
         }
       },
       "400": {
@@ -186,13 +186,13 @@
           "content-type"
         ],
         "example": {
-          "id": "adec99b5-6351-4b19-852a-ad4be91fce86",
-          "fromWalletId": "10033d43-2075-48db-b2b1-cea295f29d0a",
-          "toWalletId": "7b86dd2e-7e8a-4428-8065-c5564ad2b7bf",
+          "id": "5848fde8-94a0-4478-a209-7b68985de2fc",
+          "fromWalletId": "ff81d856-5253-4813-96e0-3977abbc025d",
+          "toWalletId": "33e8e107-ba17-49eb-a3a0-8188ec4eb983",
           "amount": "100.00",
           "fee": "1.00",
           "status": "completed",
-          "createdAt": "2026-11-11T09:41:49.250Z"
+          "createdAt": "2026-11-11T09:51:19.258Z"
         }
       }
     },
@@ -219,12 +219,12 @@
           "content-type"
         ],
         "example": {
-          "id": "10033d43-2075-48db-b2b1-cea295f29d0a",
+          "id": "ff81d856-5253-4813-96e0-3977abbc025d",
           "owner": "alice",
           "currency": "USD",
           "balance": "19899.00",
           "held": "0.00",
-          "createdAt": "2026-11-11T09:41:49.211Z"
+          "createdAt": "2026-11-11T09:51:19.227Z"
         }
       }
     },

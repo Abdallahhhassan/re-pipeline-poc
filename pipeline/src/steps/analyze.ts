@@ -6,6 +6,7 @@ import { numbered, RequestTrace, sliceSource } from "../lib/evidence";
 import { Analysis, FINDINGS_SCHEMA } from "../lib/findings";
 import { loadScenarios, Recording } from "../lib/scenarios";
 import { log } from "../lib/log";
+import { claudeTool } from "../lib/tools";
 
 const SYSTEM = `You are a reverse engineering analyst. You receive evidence about one area of a running system:
 recorded HTTP requests and responses, the database statements each request ran (from traces),
@@ -84,6 +85,9 @@ export async function analyze(cfg: Config, flags: Set<string>) {
   log.input("Traces (route + SQL per request)", outPath(cfg, "capture", "traces.json"));
   log.input("Database schema", outPath(cfg, "capture", "schema.md"));
   log.input("Source slice", outPath(cfg, "capture", "code-slice.md"));
+  log.tool({ name: "Evidence builder", purpose: "packs each area's requests, SQL, schema and source lines into one prompt", where: "pipeline/src/steps/analyze.ts (evidenceFor)" });
+  if (manual) log.tool({ name: "Manual analysis", purpose: "with no API key, a person or a Claude chat writes findings.json from each prompt", where: "out/analysis/<area>/prompt.md" });
+  else log.tool(claudeTool(cfg, cfg.analysis.model));
   log.info(manual ? "mode: manual (no ANTHROPIC_API_KEY or --manual): prompts are written, findings come from findings.json files" : `mode: Claude API, model ${cfg.analysis.model}, one call per area`);
   const merged: Analysis = { findings: [], unknowns: [] };
   const status: Record<string, string> = {};

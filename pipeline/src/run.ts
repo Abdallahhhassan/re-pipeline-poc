@@ -58,6 +58,7 @@ function report(cfg: Config) {
   const par = get("parity", "report.json");
   const seen = results.filter((r: any) => r.tag === "Seen").length;
   const failed = results.filter((r: any) => r.probeResult === "fail");
+  log.tool({ name: "Report writer", purpose: "summarizes the run in one markdown page", where: "pipeline/src/run.ts (report)" });
   log.input("Verdicts", outPath(cfg, "verify", "results.json"));
   log.input("Unknowns", outPath(cfg, "verify", "unknowns.json"));
   if (par) log.input("Parity results", outPath(cfg, "parity", "report.json"));

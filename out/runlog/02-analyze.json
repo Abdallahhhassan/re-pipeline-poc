@@ -5,14 +5,26 @@
   "title": "Analyze",
   "does": "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe.",
   "status": "ok",
-  "startedAt": "2026-11-11T09:41:50.381Z",
-  "ms": 14,
+  "startedAt": "2026-11-11T09:51:20.206Z",
+  "ms": 18,
+  "tools": [
+    {
+      "name": "Evidence builder",
+      "purpose": "packs each area's requests, SQL, schema and source lines into one prompt",
+      "where": "pipeline/src/steps/analyze.ts (evidenceFor)"
+    },
+    {
+      "name": "Manual analysis",
+      "purpose": "with no API key, a person or a Claude chat writes findings.json from each prompt",
+      "where": "out/analysis/<area>/prompt.md"
+    }
+  ],
   "inputs": [
     {
       "label": "Recorded requests",
       "path": "out/capture/recordings.json",
-      "bytes": 17187,
-      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"10033d43-2075-48db-b2b1-cea295f29d0a\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.211Z\"\n      }\n    },\n    \"traceId\": \"46c9671251392f08d4764c36b485af14\",\n    \"ms\": 33\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"7b86dd2e-7e8a-4428-8065-c5564ad2b7bf\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:41:49.222Z\"\n      }\n    },\n    \"traceId\": \"8c430208de2f0f2fb566b527f1b2d334\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
+      "bytes": 17185,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"ff81d856-5253-4813-96e0-3977abbc025d\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.227Z\"\n      }\n    },\n    \"traceId\": \"d2e5f379c37c363edd299b001b427423\",\n    \"ms\": 24\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"33e8e107-ba17-49eb-a3a0-8188ec4eb983\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:51:19.235Z\"\n      }\n    },\n    \"traceId\": \"7aba10d8763b94383920624def3f172e\",\n    \"ms\": 4\n  }\n]\n… 20 more items (22 total)"
     },
     {
       "label": "Traces (route + SQL per request)",
@@ -67,27 +79,27 @@
   ],
   "lines": [
     {
-      "ms": 1,
+      "ms": 2,
       "level": "info",
       "msg": "mode: manual (no ANTHROPIC_API_KEY or --manual): prompts are written, findings come from findings.json files"
     },
     {
-      "ms": 5,
+      "ms": 8,
       "level": "info",
       "msg": "area /wallets: 6 requests, routes /wallets, /wallets/:id/deposits, /wallets/:id; evidence bundle 9k chars"
     },
     {
-      "ms": 7,
+      "ms": 9,
       "level": "ok",
       "msg": "area /wallets: 8 findings (8 with probes), 1 unknowns"
     },
     {
-      "ms": 11,
+      "ms": 16,
       "level": "info",
       "msg": "area /transfers: 16 requests, routes /transfers, /transfers/:id; evidence bundle 26k chars"
     },
     {
-      "ms": 12,
+      "ms": 17,
       "level": "ok",
       "msg": "area /transfers: 20 findings (19 with probes), 4 unknowns"
     }
