@@ -1,0 +1,314 @@
+{
+  "total": 49,
+  "different": 0,
+  "accepted": 1,
+  "diffRate": 0,
+  "results": [
+    {
+      "case": "journey: create wallet alice",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: create wallet bob",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: create EUR wallet carol",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: fund alice",
+      "request": "POST /wallets/85834e83-92a7-4853-9026-1d410166805f/deposits",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: send money",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: retry the same request",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: view transfer",
+      "request": "GET /transfers/86cede16-a605-4126-b4c9-4ddd05828854",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: view sender wallet",
+      "request": "GET /wallets/85834e83-92a7-4853-9026-1d410166805f",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: view receiver wallet",
+      "request": "GET /wallets/d349b8a2-8b70-4128-92ce-b0158d68f7e5",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: send to EUR wallet",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "journey: bob sends more than he has",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=0]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=-5]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=0.005]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=1.5]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=199.99]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=4999.99]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=5000]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=10000]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=10000.01]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=\"100\"]",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "probe: send money [amount=4.35]",
+      "request": "POST /transfers",
+      "same": false,
+      "differences": [
+        "status: 400 vs 201",
+        "body.error: \"VALIDATION_ERROR\" vs undefined",
+        "body.field: \"amount\" vs undefined",
+        "body.reason: \"max 2 decimals\" vs undefined",
+        "body.id: undefined vs \"<masked>\"",
+        "body.fromWalletId: undefined vs \"<masked>\"",
+        "body.toWalletId: undefined vs \"<masked>\"",
+        "body.amount: undefined vs \"4.35\"",
+        "body.fee: undefined vs \"1.00\"",
+        "body.status: undefined vs \"completed\"",
+        "body.createdAt: undefined vs \"<masked>\""
+      ]
+    },
+    {
+      "case": "claim wallets-F1: Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \"0.00\".",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F2: Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \"currency\".",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F3: Owner is required: a blank owner returns 400 VALIDATION_ERROR with field \"owner\".",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F4: Owner names longer than 80 characters are rejected.",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F5: Spaces around the owner name are trimmed before saving.",
+      "request": "POST /wallets",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F6: A deposit adds the amount and returns 201 with the wallet id and the new balance as a two-decimal string.",
+      "request": "POST /wallets/{{bob}}/deposits",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F7: Deposits follow the same amount rules as transfers: zero returns 400 VALIDATION_ERROR.",
+      "request": "POST /wallets/{{bob}}/deposits",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim wallets-F8: GET /wallets/:id returns the wallet with balance and held; a malformed or unknown id returns 404 WALLET_NOT_FOUND.",
+      "request": "GET /wallets/not-a-uuid",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F1: A transfer below the review threshold completes immediately: 201, status \"completed\", and money values come back as strings with two decimals.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F2: The fee is 0.5% of the amount, rounded to cents.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F3: The fee never goes below 1.00, so any transfer under 200.00 pays exactly 1.00.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F4: Transfers of 5,000.00 or more are not settled; they are created with status \"pending_review\". 4,999.99 still completes.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F5: A pending_review transfer charges the sender amount plus fee right away and moves the amount into the sender's \"held\" balance; the receiver is not credited.",
+      "request": "GET /wallets/{{alice}}",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F6: The receiver of a pending_review transfer sees no change to their balance.",
+      "request": "GET /wallets/{{bob}}",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F7: A completed transfer takes amount plus fee from the sender and gives the receiver the amount only.",
+      "request": "GET /wallets/{{alice}}",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F8: Each wallet can send at most 10,000.00 per UTC day. Going over returns 422 LIMIT_EXCEEDED with the amount still allowed in \"remaining\".",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F9: Pending_review transfers count toward the daily limit.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F10: The daily limit is checked before the balance: a wallet with no money that asks for more than the limit gets LIMIT_EXCEEDED, not INSUFFICIENT_FUNDS.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F11: The sender must cover amount plus fee; otherwise 409 INSUFFICIENT_FUNDS. A balance of 100.99 cannot send 100.00.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F12: Repeating a request with the same Idempotency-Key returns the original transfer with 200 and the header Idempotent-Replay: true, without moving money again.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F13: A reused Idempotency-Key returns the original transfer even when the new request asks for a different amount.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F14: Sender and receiver must use the same currency; otherwise 422 CURRENCY_MISMATCH.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F15: Sending to the same wallet returns 400 SAME_WALLET.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F16: Amount must be a JSON number above 0 with at most 2 decimals; strings, zero, negatives and extra decimals return 400 VALIDATION_ERROR with field \"amount\".",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F17: Wallet ids must be UUIDs; anything else returns 400 VALIDATION_ERROR naming the field.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F18: A well-formed wallet id that does not exist returns 404 WALLET_NOT_FOUND.",
+      "request": "POST /transfers",
+      "same": true,
+      "differences": []
+    },
+    {
+      "case": "claim transfers-F19: GET /transfers/:id returns the transfer as created; an unknown id returns 404 TRANSFER_NOT_FOUND.",
+      "request": "GET /transfers/00000000-0000-4000-8000-000000000000",
+      "same": true,
+      "differences": []
+    }
+  ]
+}

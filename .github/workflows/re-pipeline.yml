@@ -1,0 +1,64 @@
+name: re-pipeline
+
+on:
+  schedule:
+    - cron: "17 1 * * *" # nightly, 03:17 Cairo time
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: re-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build:demo
+      - run: npm run build:rebuilt
+      - run: psql postgres://postgres@127.0.0.1:5432/postgres -c "create database re_demo" -c "create database re_rebuilt"
+      - name: Run the pipeline
+        env:
+          # Without this secret the AI steps fall back to manual mode and reuse the committed findings.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npx tsx pipeline/src/run.ts all
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: re-pipeline-out
+          path: out/
+      - name: Post the report to the run summary
+        if: always()
+        run: cat out/report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+  deploy:
+    needs: run
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

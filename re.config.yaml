@@ -1,0 +1,65 @@
+# One file describes the system under analysis. Point it at the real system when access lands.
+out: out
+
+target:
+  name: demo-wallet
+  baseUrl: http://127.0.0.1:4001
+  start:
+    command: node demo-target/dist/server.js
+    env:
+      PORT: "4001"
+      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_demo
+  # node-auto injects OpenTelemetry into a Node process with no code changes.
+  tracing: node-auto
+  # Sandbox only: puts the data back to a known state before each run and probe.
+  reset:
+    command: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql 2>/dev/null
+  database:
+    url: postgres://postgres@127.0.0.1:5432/re_demo
+  source:
+    dir: demo-target/src
+    extensions: [.ts, .js]
+
+scenarios: scenarios/demo.yaml
+
+# Controlled probing: on steps marked `probe: true`, try each value for each field, one at a time.
+probes:
+  fields: [amount]
+  # 4.35 is a float trap: 4.35 * 100 is 434.99999999999994 in JavaScript.
+  values: [0, -5, 0.005, 1.5, 199.99, 4999.99, 5000, 10000, 10000.01, "100", 4.35]
+  dropHeaders: [Idempotency-Key]
+
+analysis:
+  model: claude-sonnet-5-5
+  maxTokens: 16000
+
+rebuild:
+  dir: rebuilt
+  model: claude-sonnet-5-5
+
+# The rebuilt service, started the same way for verification and parity.
+rebuilt:
+  baseUrl: http://127.0.0.1:4002
+  start:
+    command: node rebuilt/dist/server.js
+    env:
+      PORT: "4002"
+      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_rebuilt
+  reset:
+    command: psql postgres://postgres@127.0.0.1:5432/re_rebuilt -q -f rebuilt/schema.sql 2>/dev/null
+
+parity:
+  # Values that differ on every run (generated ids, timestamps) are masked before diffing.
+  ignoreFields: [id, createdAt, walletId, fromWalletId, toWalletId]
+  # Differences people reviewed and chose not to copy. Listed in the report, not counted as failures.
+  accepted:
+    - case: "probe: send money [amount=4.35]"
+      reason: "Original rejects some valid amounts (4.35 * 100 is not exact in floating point). Rebuild accepts them on purpose."
+
+# Links shown in the footer of the results page (site/index.html).
+site:
+  links:
+    - label: Research doc
+      href: https://claude.ai/artifact/EgHqL2KpGp4eGMsZDHSZbd
+    - label: Pipeline whiteboard
+      href: https://claude.ai/artifact/4ekdowofD1WPxMS9YTo3py

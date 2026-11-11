@@ -1,0 +1,253 @@
+{
+  "step": "capture",
+  "order": 1,
+  "n": "1-5",
+  "title": "Capture",
+  "does": "Starts the target in the sandbox with tracing injected, runs the scenarios, probes one field at a time from a fresh state, then reads the schema and the source behind the routes. No AI.",
+  "status": "ok",
+  "startedAt": "2026-11-11T09:07:18.035Z",
+  "ms": 1422,
+  "inputs": [
+    {
+      "label": "Config: target",
+      "path": "re.config.yaml",
+      "bytes": 2280,
+      "preview": "# One file describes the system under analysis. Point it at the real system when access lands.\nout: out\n\ntarget:\n  name: demo-wallet\n  baseUrl: http://127.0.0.1:4001\n  start:\n    command: node demo-target/dist/server.js\n    env:\n      PORT: \"4001\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_demo\n  # node-auto injects OpenTelemetry into a Node process with no code changes.\n  tracing: node-auto\n  # Sandbox only: puts the data back to a known state before each run and probe.\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql 2>/dev/null\n  database:\n    url: postgres://postgres@127.0.0.1:5432/re_demo\n  source:\n    dir: demo-target/src\n    extensions: [.ts, .js]\n\nscenarios: scenarios/demo.yaml\n\n# Controlled probing: on steps marked `probe: true`, try each value for each field, one at a time.\nprobes:\n  fields: [amount]\n  # 4.35 is a float trap: 4.35 * 100 is 434.99999999999994 in JavaScript.\n  values: [0, -5, 0.005, 1.5, 199.99, 4999.99, 5000, 10000, 10000.01, \"100\", 4.35]\n  dropHeaders: [Idempotency-Key]\n\nanalysis:\n  model: claude-sonnet-5-5\n  maxTokens: 16000\n\nrebuild:\n  dir: rebuilt\n  model: claude-sonnet-5-5\n\n# The rebuilt service, started the same way for verification and parity.\nrebuilt:\n  baseUrl: http://127.0.0.1:4002\n  start:\n    command: node rebuilt/dist/server.js\n    env:\n      PORT: \"4002\"\n      DATABASE_URL: postgres://postgres@127.0.0.1:5432/re_rebuilt\n  reset:\n    command: psql postgres://postgres@127.0.0.1:5432/re_rebuilt -q -f rebuilt/schema.sql 2>/dev/null\n\nparity:\n  # Values that differ on every run\n…"
+    },
+    {
+      "label": "Scenarios",
+      "path": "scenarios/demo.yaml",
+      "bytes": 1751,
+      "preview": "# Scenarios = ordinary user journeys. In the real setup these come from the Playwright crawler\n# or from recorded sessions; probing (see re.config.yaml) explores the edges automatically.\nfixtures:\n  - name: create wallet alice\n    request: { method: POST, path: /wallets, body: { owner: alice } }\n    save: { alice: body.id }\n  - name: create wallet bob\n    request: { method: POST, path: /wallets, body: { owner: bob } }\n    save: { bob: body.id }\n  - name: create EUR wallet carol\n    request: { method: POST, path: /wallets, body: { owner: carol, currency: EUR } }\n    save: { carol: body.id }\n  - name: fund alice\n    request: { method: POST, path: \"/wallets/{{alice}}/deposits\", body: { amount: 20000 } }\n\nflows:\n  - name: send money\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n    save: { t1: body.id }\n    probe: true\n  - name: retry the same request\n    request:\n      method: POST\n      path: /transfers\n      headers: { Idempotency-Key: flow-1 }\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{bob}}\", amount: 100 }\n  - name: view transfer\n    request: { method: GET, path: \"/transfers/{{t1}}\" }\n  - name: view sender wallet\n    request: { method: GET, path: \"/wallets/{{alice}}\" }\n  - name: view receiver wallet\n    request: { method: GET, path: \"/wallets/{{bob}}\" }\n  - name: send to EUR wallet\n    request:\n      method: POST\n      path: /transfers\n      body: { fromWalletId: \"{{alice}}\", toWalletId: \"{{carol}}\", amount: 50 }\n  - name: bob sends\n…"
+    },
+    {
+      "label": "Probe plan",
+      "preview": "fields: amount\nvalues: [0,-5,0.005,1.5,199.99,4999.99,5000,10000,10000.01,\"100\",4.35]\n=> 11 probes, each from a fresh state"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Recorded requests and responses",
+      "path": "out/capture/recordings.json",
+      "bytes": 17187,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.564Z\"\n      }\n    },\n    \"traceId\": \"dfcd543e0c4884333ebc97d784bbee72\",\n    \"ms\": 23\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"fa43818e-91b1-4c7d-a552-2bb69c13229d\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.573Z\"\n      }\n    },\n    \"traceId\": \"84fbb85cdf85ec30ccf35858ebe40cd3\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
+    },
+    {
+      "label": "Route and SQL per request (from traces)",
+      "path": "out/capture/traces.json",
+      "bytes": 16984,
+      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 11,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 10,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
+    },
+    {
+      "label": "Database schema",
+      "path": "out/capture/schema.md",
+      "bytes": 1607,
+      "preview": "### ledger_entries\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | bigint | no | nextval('ledger_entries_id_seq'::regclass) |\n| transfer_id | uuid | yes |  |\n| wallet_id | uuid | no |  |\n| direction | text | no |  |\n| kind | text | no |  |\n| amount | numeric | no |  |\n| created_at | timestamp with time zone | no | now() |\n\n- ledger_entries_direction_check: CHECK ((direction = ANY (ARRAY['debit'::text, 'credit'::text])))\n- ledger_entries_pkey: PRIMARY KEY (id)\n- ledger_entries_transfer_id_fkey: FOREIGN KEY (transfer_id) REFERENCES transfers(id)\n- ledger_entries_wallet_id_fkey: FOREIGN KEY (wallet_id) REFERENCES wallets(id)\n\n### transfers\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | uuid | no | gen_random_uuid() |\n| from_wallet_id | uuid | no |  |\n| to_wallet_id | uuid | no |  |\n| amount | numeric | no |  |\n| fee | numeric | no |  |\n| status | text | no |  |\n| idempotency_key | text | yes |  |\n| created_at | timestamp with time zone | no | now() |\n\n- transfers_from_wallet_id_fkey: FOREIGN KEY (from_wallet_id) REFERENCES wallets(id)\n- transfers_idempotency_key_key: UNIQUE (idempotency_key)\n- transfers_pkey: PRIMARY KEY (id)\n- transfers_to_wallet_id_fkey: FOREIGN KEY (to_wallet_id) REFERENCES wallets(id)\n\n### wallets\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | uuid | no | gen_random_uuid() |\n| owner | text | no |  |\n| currency | character | no | 'USD'::bpchar |\n| balance | numeric | no | 0 |\n| held | numeric | no | 0 |\n| created_at | timestamp with time zone | no | now() |\n\n- wallets_pkey: PRIMARY KE\n…"
+    },
+    {
+      "label": "Source files behind the routes, with line numbers",
+      "path": "out/capture/code-slice.md",
+      "bytes": 9558,
+      "preview": "### demo-target/src/db.ts\n```\n   1  import { Pool, PoolClient } from \"pg\";\n   2  \n   3  export const pool = new Pool({ connectionString: process.env.DATABASE_URL });\n   4  \n   5  export async function inTx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {\n   6    const client = await pool.connect();\n   7    try {\n   8      await client.query(\"BEGIN\");\n   9      const result = await fn(client);\n  10      await client.query(\"COMMIT\");\n  11      return result;\n  12    } catch (err) {\n  13      await client.query(\"ROLLBACK\");\n  14      throw err;\n  15    } finally {\n  16      client.release();\n  17    }\n  18  }\n  19  \n```\n\n### demo-target/src/errors.ts\n```\n   1  export class ApiError extends Error {\n   2    constructor(\n   3      public status: number,\n   4      public code: string,\n   5      public extra: Record<string, unknown> = {},\n   6    ) {\n   7      super(code);\n   8    }\n   9  }\n  10  \n  11  export const isUuid = (v: unknown): v is string =>\n  12    typeof v === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);\n  13  \n  14  /** Money arrives as a JSON number with at most 2 decimals. */\n  15  export function parseAmount(value: unknown, field = \"amount\"): number {\n  16    if (typeof value !== \"number\" || !Number.isFinite(value) || value <= 0) {\n  17      throw new ApiError(400, \"VALIDATION_ERROR\", { field });\n  18    }\n  19    if (Math.round(value * 100) !== value * 100) {\n  20      throw new ApiError(400, \"VALIDATION_ERROR\", { field, reason: \"max 2 decimals\" });\n  21    }\n  22    return value;\n  23  }\n  24  \n```\n\n### demo-target/sr\n…"
+    }
+  ],
+  "lines": [
+    {
+      "ms": 6,
+      "level": "info",
+      "msg": "reset data: psql postgres://postgres@127.0.0.1:5432/re_demo -q -f demo-target/schema.sql"
+    },
+    {
+      "ms": 55,
+      "level": "info",
+      "msg": "start target: node demo-target/dist/server.js with OpenTelemetry injected (NODE_OPTIONS=--require register.cjs)"
+    },
+    {
+      "ms": 511,
+      "level": "ok",
+      "msg": "target answering on http://127.0.0.1:4001 after 456ms"
+    },
+    {
+      "ms": 511,
+      "level": "info",
+      "msg": "run 4 fixtures (test data setup)"
+    },
+    {
+      "ms": 534,
+      "level": "info",
+      "msg": "fixture-001 create wallet alice: POST /wallets → 201 (23ms)"
+    },
+    {
+      "ms": 540,
+      "level": "info",
+      "msg": "fixture-002 create wallet bob: POST /wallets → 201 (6ms)"
+    },
+    {
+      "ms": 545,
+      "level": "info",
+      "msg": "fixture-003 create EUR wallet carol: POST /wallets → 201 (5ms)"
+    },
+    {
+      "ms": 554,
+      "level": "info",
+      "msg": "fixture-004 fund alice: POST /wallets/decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea/deposits → 201 (9ms)"
+    },
+    {
+      "ms": 554,
+      "level": "info",
+      "msg": "run 7 journey steps"
+    },
+    {
+      "ms": 567,
+      "level": "info",
+      "msg": "flow-005 send money: POST /transfers → 201 (13ms)"
+    },
+    {
+      "ms": 571,
+      "level": "info",
+      "msg": "flow-006 retry the same request: POST /transfers → 200 (4ms)"
+    },
+    {
+      "ms": 576,
+      "level": "info",
+      "msg": "flow-007 view transfer: GET /transfers/78913a2d-b104-4d53-b713-7777c5028c5a → 200 (4ms)"
+    },
+    {
+      "ms": 580,
+      "level": "info",
+      "msg": "flow-008 view sender wallet: GET /wallets/decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea → 200 (4ms)"
+    },
+    {
+      "ms": 583,
+      "level": "info",
+      "msg": "flow-009 view receiver wallet: GET /wallets/fa43818e-91b1-4c7d-a552-2bb69c13229d → 200 (3ms)"
+    },
+    {
+      "ms": 588,
+      "level": "info",
+      "msg": "flow-010 send to EUR wallet: POST /transfers → 422 (5ms)"
+    },
+    {
+      "ms": 593,
+      "level": "info",
+      "msg": "flow-011 bob sends more than he has: POST /transfers → 409 (5ms)"
+    },
+    {
+      "ms": 593,
+      "level": "info",
+      "msg": "probe: 11 variations, each after a data reset and the 4 fixtures"
+    },
+    {
+      "ms": 664,
+      "level": "info",
+      "msg": "probe-016 send money [amount=0]: POST /transfers → 400 (2ms)"
+    },
+    {
+      "ms": 730,
+      "level": "info",
+      "msg": "probe-021 send money [amount=-5]: POST /transfers → 400 (2ms)"
+    },
+    {
+      "ms": 798,
+      "level": "info",
+      "msg": "probe-026 send money [amount=0.005]: POST /transfers → 400 (2ms)"
+    },
+    {
+      "ms": 882,
+      "level": "info",
+      "msg": "probe-031 send money [amount=1.5]: POST /transfers → 201 (10ms)"
+    },
+    {
+      "ms": 959,
+      "level": "info",
+      "msg": "probe-036 send money [amount=199.99]: POST /transfers → 201 (10ms)"
+    },
+    {
+      "ms": 1042,
+      "level": "info",
+      "msg": "probe-041 send money [amount=4999.99]: POST /transfers → 201 (12ms)"
+    },
+    {
+      "ms": 1121,
+      "level": "info",
+      "msg": "probe-046 send money [amount=5000]: POST /transfers → 201 (6ms)"
+    },
+    {
+      "ms": 1188,
+      "level": "info",
+      "msg": "probe-051 send money [amount=10000]: POST /transfers → 201 (5ms)"
+    },
+    {
+      "ms": 1251,
+      "level": "info",
+      "msg": "probe-056 send money [amount=10000.01]: POST /transfers → 422 (4ms)"
+    },
+    {
+      "ms": 1323,
+      "level": "info",
+      "msg": "probe-061 send money [amount=\"100\"]: POST /transfers → 400 (3ms)"
+    },
+    {
+      "ms": 1386,
+      "level": "info",
+      "msg": "probe-066 send money [amount=4.35]: POST /transfers → 400 (3ms)"
+    },
+    {
+      "ms": 1386,
+      "level": "info",
+      "msg": "stop target"
+    },
+    {
+      "ms": 1402,
+      "level": "ok",
+      "msg": "linked 791 spans to 22 of 22 requests through their traceparent ids"
+    },
+    {
+      "ms": 1403,
+      "level": "info",
+      "msg": "routes seen: /wallets, /wallets/:id/deposits, /transfers, /transfers/:id, /wallets/:id"
+    },
+    {
+      "ms": 1420,
+      "level": "ok",
+      "msg": "schema read from the live database: 3 tables"
+    },
+    {
+      "ms": 1422,
+      "level": "ok",
+      "msg": "source slice: 5 files behind those routes (db.ts, errors.ts, policy.ts, transfers.ts, wallets.ts)"
+    }
+  ],
+  "summary": {
+    "recordings": 22,
+    "byPhase": {
+      "fixture": 4,
+      "flow": 7,
+      "probe": 11
+    },
+    "statuses": {
+      "200": 4,
+      "201": 10,
+      "400": 5,
+      "409": 1,
+      "422": 2
+    },
+    "tracedRequests": 22,
+    "routes": [
+      "/wallets",
+      "/wallets/:id/deposits",
+      "/transfers",
+      "/transfers/:id",
+      "/wallets/:id"
+    ],
+    "sqlStatements": 73,
+    "schemaCaptured": true,
+    "sourceFiles": [
+      "demo-target/src/db.ts",
+      "demo-target/src/errors.ts",
+      "demo-target/src/policy.ts",
+      "demo-target/src/transfers.ts",
+      "demo-target/src/wallets.ts"
+    ]
+  }
+}

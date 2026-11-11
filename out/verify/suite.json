@@ -1,0 +1,659 @@
+[
+  {
+    "id": "wallets-F1",
+    "claim": "Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \"0.00\".",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "dave"
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "owner": "dave",
+          "currency": "USD",
+          "balance": "0.00",
+          "held": "0.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F2",
+    "claim": "Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \"currency\".",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "dave",
+          "currency": "GBP"
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "currency"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F3",
+    "claim": "Owner is required: a blank owner returns 400 VALIDATION_ERROR with field \"owner\".",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "   "
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "owner"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F4",
+    "claim": "Owner names longer than 80 characters are rejected.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "owner"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F5",
+    "claim": "Spaces around the owner name are trimmed before saving.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "  erin  "
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "owner": "erin"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F6",
+    "claim": "A deposit adds the amount and returns 201 with the wallet id and the new balance as a two-decimal string.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets/{{bob}}/deposits",
+        "body": {
+          "amount": 50.5
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "balance": "50.50"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F7",
+    "claim": "Deposits follow the same amount rules as transfers: zero returns 400 VALIDATION_ERROR.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets/{{bob}}/deposits",
+        "body": {
+          "amount": 0
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "amount"
+        }
+      }
+    }
+  },
+  {
+    "id": "wallets-F8",
+    "claim": "GET /wallets/:id returns the wallet with balance and held; a malformed or unknown id returns 404 WALLET_NOT_FOUND.",
+    "probe": {
+      "request": {
+        "method": "GET",
+        "path": "/wallets/not-a-uuid"
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "WALLET_NOT_FOUND"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F1",
+    "claim": "A transfer below the review threshold completes immediately: 201, status \"completed\", and money values come back as strings with two decimals.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "status": "completed",
+          "amount": "100.00",
+          "fee": "1.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F2",
+    "claim": "The fee is 0.5% of the amount, rounded to cents.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 3000
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "fee": "15.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F3",
+    "claim": "The fee never goes below 1.00, so any transfer under 200.00 pays exactly 1.00.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 1.5
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "fee": "1.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F4",
+    "claim": "Transfers of 5,000.00 or more are not settled; they are created with status \"pending_review\". 4,999.99 still completes.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 5000
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "status": "pending_review",
+          "fee": "25.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F5",
+    "claim": "A pending_review transfer charges the sender amount plus fee right away and moves the amount into the sender's \"held\" balance; the receiver is not credited.",
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{alice}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "13970.00",
+          "held": "6000.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F6",
+    "claim": "The receiver of a pending_review transfer sees no change to their balance.",
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{bob}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "0.00",
+          "held": "0.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F7",
+    "claim": "A completed transfer takes amount plus fee from the sender and gives the receiver the amount only.",
+    "probe": {
+      "setup": [
+        {
+          "name": "small transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{alice}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "19899.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F8",
+    "claim": "Each wallet can send at most 10,000.00 per UTC day. Going over returns 422 LIMIT_EXCEEDED with the amount still allowed in \"remaining\".",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 10000.01
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED",
+          "remaining": 10000
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F9",
+    "claim": "Pending_review transfers count toward the daily limit.",
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 4500
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED",
+          "remaining": 4000
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F10",
+    "claim": "The daily limit is checked before the balance: a wallet with no money that asks for more than the limit gets LIMIT_EXCEEDED, not INSUFFICIENT_FUNDS.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{bob}}",
+          "toWalletId": "{{alice}}",
+          "amount": 10000.01
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F11",
+    "claim": "The sender must cover amount plus fee; otherwise 409 INSUFFICIENT_FUNDS. A balance of 100.99 cannot send 100.00.",
+    "probe": {
+      "setup": [
+        {
+          "name": "fund bob",
+          "request": {
+            "method": "POST",
+            "path": "/wallets/{{bob}}/deposits",
+            "body": {
+              "amount": 100.99
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{bob}}",
+          "toWalletId": "{{alice}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 409,
+        "body": {
+          "error": "INSUFFICIENT_FUNDS"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F12",
+    "claim": "Repeating a request with the same Idempotency-Key returns the original transfer with 200 and the header Idempotent-Replay: true, without moving money again.",
+    "probe": {
+      "setup": [
+        {
+          "name": "first call",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "headers": {
+              "Idempotency-Key": "k-1"
+            },
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "headers": {
+          "Idempotency-Key": "k-1"
+        },
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "amount": "100.00"
+        },
+        "headers": {
+          "idempotent-replay": "true"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F13",
+    "claim": "A reused Idempotency-Key returns the original transfer even when the new request asks for a different amount.",
+    "probe": {
+      "setup": [
+        {
+          "name": "first call",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "headers": {
+              "Idempotency-Key": "k-2"
+            },
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "headers": {
+          "Idempotency-Key": "k-2"
+        },
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 999
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "amount": "100.00"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F14",
+    "claim": "Sender and receiver must use the same currency; otherwise 422 CURRENCY_MISMATCH.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{carol}}",
+          "amount": 50
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "CURRENCY_MISMATCH"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F15",
+    "claim": "Sending to the same wallet returns 400 SAME_WALLET.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{alice}}",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "SAME_WALLET"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F16",
+    "claim": "Amount must be a JSON number above 0 with at most 2 decimals; strings, zero, negatives and extra decimals return 400 VALIDATION_ERROR with field \"amount\".",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 0.005
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "amount",
+          "reason": "max 2 decimals"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F17",
+    "claim": "Wallet ids must be UUIDs; anything else returns 400 VALIDATION_ERROR naming the field.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "abc",
+          "toWalletId": "{{bob}}",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "fromWalletId"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F18",
+    "claim": "A well-formed wallet id that does not exist returns 404 WALLET_NOT_FOUND.",
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "00000000-0000-4000-8000-000000000000",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "WALLET_NOT_FOUND"
+        }
+      }
+    }
+  },
+  {
+    "id": "transfers-F19",
+    "claim": "GET /transfers/:id returns the transfer as created; an unknown id returns 404 TRANSFER_NOT_FOUND.",
+    "probe": {
+      "request": {
+        "method": "GET",
+        "path": "/transfers/00000000-0000-4000-8000-000000000000"
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "TRANSFER_NOT_FOUND"
+        }
+      }
+    }
+  }
+]

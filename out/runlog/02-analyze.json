@@ -1,0 +1,104 @@
+{
+  "step": "analyze",
+  "order": 2,
+  "n": "6",
+  "title": "Analyze",
+  "does": "Splits the system into areas and gives each area's evidence to an analyst (Claude via API, or manual). Gets back findings tagged Seen, Inferred or Unknown, each with evidence and a probe.",
+  "status": "ok",
+  "startedAt": "2026-11-11T09:07:19.458Z",
+  "ms": 15,
+  "inputs": [
+    {
+      "label": "Recorded requests",
+      "path": "out/capture/recordings.json",
+      "bytes": 17187,
+      "preview": "[\n  {\n    \"id\": \"fixture-001\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet alice\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"alice\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea\",\n        \"owner\": \"alice\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.564Z\"\n      }\n    },\n    \"traceId\": \"dfcd543e0c4884333ebc97d784bbee72\",\n    \"ms\": 23\n  },\n  {\n    \"id\": \"fixture-002\",\n    \"phase\": \"fixture\",\n    \"name\": \"create wallet bob\",\n    \"request\": {\n      \"method\": \"POST\",\n      \"path\": \"/wallets\",\n      \"headers\": {\n        \"content-type\": \"application/json\"\n      },\n      \"body\": {\n        \"owner\": \"bob\"\n      }\n    },\n    \"response\": {\n      \"status\": 201,\n      \"headers\": {\n        \"content-type\": \"application/json; charset=utf-8\"\n      },\n      \"body\": {\n        \"id\": \"fa43818e-91b1-4c7d-a552-2bb69c13229d\",\n        \"owner\": \"bob\",\n        \"currency\": \"USD\",\n        \"balance\": \"0.00\",\n        \"held\": \"0.00\",\n        \"createdAt\": \"2026-11-11T09:07:18.573Z\"\n      }\n    },\n    \"traceId\": \"84fbb85cdf85ec30ccf35858ebe40cd3\",\n    \"ms\": 6\n  }\n]\n… 20 more items (22 total)"
+    },
+    {
+      "label": "Traces (route + SQL per request)",
+      "path": "out/capture/traces.json",
+      "bytes": 16984,
+      "preview": "[\n  {\n    \"recordingId\": \"fixture-001\",\n    \"route\": \"/wallets\",\n    \"spans\": 11,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"alice\",\n          \"USD\"\n        ]\n      }\n    ]\n  },\n  {\n    \"recordingId\": \"fixture-002\",\n    \"route\": \"/wallets\",\n    \"spans\": 10,\n    \"sql\": [\n      {\n        \"statement\": \"INSERT INTO wallets (owner, currency) VALUES ($1, $2) RETURNING *\",\n        \"values\": [\n          \"bob\",\n          \"USD\"\n        ]\n      }\n    ]\n  }\n]\n… 20 more items (22 total)"
+    },
+    {
+      "label": "Database schema",
+      "path": "out/capture/schema.md",
+      "bytes": 1607,
+      "preview": "### ledger_entries\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | bigint | no | nextval('ledger_entries_id_seq'::regclass) |\n| transfer_id | uuid | yes |  |\n| wallet_id | uuid | no |  |\n| direction | text | no |  |\n| kind | text | no |  |\n| amount | numeric | no |  |\n| created_at | timestamp with time zone | no | now() |\n\n- ledger_entries_direction_check: CHECK ((direction = ANY (ARRAY['debit'::text, 'credit'::text])))\n- ledger_entries_pkey: PRIMARY KEY (id)\n- ledger_entries_transfer_id_fkey: FOREIGN KEY (transfer_id) REFERENCES transfers(id)\n- ledger_entries_wallet_id_fkey: FOREIGN KEY (wallet_id) REFERENCES wallets(id)\n\n### transfers\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | uuid | no | gen_random_uuid() |\n| from_wallet_id | uuid | no |  |\n| to_wallet_id | uuid | no |  |\n| amount | numeric | no |  |\n| fee | numeric | no |  |\n| status | text | no |  |\n| idempotency_key | text | yes |  |\n| created_at | timestamp with time zone | no | now() |\n\n- transfers_from_wallet_id_fkey: FOREIGN KEY (from_wallet_id) REFERENCES wallets(id)\n- transfers_idempotency_key_key: UNIQUE (idempotency_key)\n- transfers_pkey: PRIMARY KEY (id)\n- transfers_to_wallet_id_fkey: FOREIGN KEY (to_wallet_id) REFERENCES wallets(id)\n\n### wallets\n| column | type | nullable | default |\n| --- | --- | --- | --- |\n| id | uuid | no | gen_random_uuid() |\n| owner | text | no |  |\n| currency | character | no | 'USD'::bpchar |\n| balance | numeric | no | 0 |\n| held | numeric | no | 0 |\n| created_at | timestamp with time zone | no | now() |\n\n- wallets_pkey: PRIMARY KE\n…"
+    },
+    {
+      "label": "Source slice",
+      "path": "out/capture/code-slice.md",
+      "bytes": 9558,
+      "preview": "### demo-target/src/db.ts\n```\n   1  import { Pool, PoolClient } from \"pg\";\n   2  \n   3  export const pool = new Pool({ connectionString: process.env.DATABASE_URL });\n   4  \n   5  export async function inTx<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {\n   6    const client = await pool.connect();\n   7    try {\n   8      await client.query(\"BEGIN\");\n   9      const result = await fn(client);\n  10      await client.query(\"COMMIT\");\n  11      return result;\n  12    } catch (err) {\n  13      await client.query(\"ROLLBACK\");\n  14      throw err;\n  15    } finally {\n  16      client.release();\n  17    }\n  18  }\n  19  \n```\n\n### demo-target/src/errors.ts\n```\n   1  export class ApiError extends Error {\n   2    constructor(\n   3      public status: number,\n   4      public code: string,\n   5      public extra: Record<string, unknown> = {},\n   6    ) {\n   7      super(code);\n   8    }\n   9  }\n  10  \n  11  export const isUuid = (v: unknown): v is string =>\n  12    typeof v === \"string\" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);\n  13  \n  14  /** Money arrives as a JSON number with at most 2 decimals. */\n  15  export function parseAmount(value: unknown, field = \"amount\"): number {\n  16    if (typeof value !== \"number\" || !Number.isFinite(value) || value <= 0) {\n  17      throw new ApiError(400, \"VALIDATION_ERROR\", { field });\n  18    }\n  19    if (Math.round(value * 100) !== value * 100) {\n  20      throw new ApiError(400, \"VALIDATION_ERROR\", { field, reason: \"max 2 decimals\" });\n  21    }\n  22    return value;\n  23  }\n  24  \n```\n\n### demo-target/sr\n…"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Prompt for /wallets (what the analyst sees)",
+      "path": "out/analysis/wallets/prompt.md",
+      "bytes": 11167,
+      "preview": "<!-- system -->\nYou are a reverse engineering analyst. You receive evidence about one area of a running system:\nrecorded HTTP requests and responses, the database statements each request ran (from traces),\nthe database schema, and the source files behind these routes with line numbers.\n\nDescribe how the system behaves, as findings a developer could rebuild it from.\n\nRules:\n- Every finding cites evidence: recording ids (e.g. \"probe-014\"), traces as \"trace:<recording id>\",\n  source lines as \"src:<file>:<line>\".\n- tag: \"Seen\" if a recording directly shows it, \"Inferred\" if you concluded it from code or several\n  observations, \"Unknown\" if the evidence cannot settle it.\n- Add a probe to every finding that HTTP calls can test. The pipeline runs each probe on a fresh\n  sandbox after the fixtures, so the fixture variables listed below are available as {{name}}.\n  Findings without a passing probe are capped at \"Inferred\", so prefer testable claims.\n- Cover edge cases the code reveals even if no recording hit them (thresholds, limits, states).\n- Claims describe behavior in plain words: inputs, outputs, states, limits, errors. No code.\n- Put open questions in \"unknowns\": behavior the code hints at that no endpoint or evidence settles.\n- Reply with JSON only, in exactly this shape:\n{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"rule | flow | data | error | contract\",\n      \"claim\": \"One plain-language sentence about behavior.\",\n      \"tag\": \"Seen | Inferred | Unknown\",\n      \"evidence\": [\"probe-014\", \"trace:flow-005\", \"src:demo-target/src/po\n…"
+    },
+    {
+      "label": "Findings for /wallets (what the analyst wrote)",
+      "path": "out/analysis/wallets/findings.json",
+      "bytes": 5532,
+      "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"flow\",\n      \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"fixture-001\",\n        \"fixture-002\",\n        \"src:demo-target/src/wallets.ts:18-31\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\"\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"USD\",\n            \"balance\": \"0.00\",\n            \"held\": \"0.00\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F2\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"rule\",\n      \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n      \"tag\": \"Inferred\",\n      \"evidence\": [\n        \"fixture-003\",\n        \"src:demo-target/src/wallets.ts:5,23-25\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"GBP\"\n          }\n        },\n        \"expect\": {\n          \"status\": 400,\n          \"body\": {\n            \"error\": \"VALIDATION_ERROR\",\n            \"field\": \"currency\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F3\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"rule\",\n      \"claim\": \"Owner is required: a blank owner returns 400 V\n…"
+    },
+    {
+      "label": "Prompt for /transfers (what the analyst sees)",
+      "path": "out/analysis/transfers/prompt.md",
+      "bytes": 28171,
+      "preview": "<!-- system -->\nYou are a reverse engineering analyst. You receive evidence about one area of a running system:\nrecorded HTTP requests and responses, the database statements each request ran (from traces),\nthe database schema, and the source files behind these routes with line numbers.\n\nDescribe how the system behaves, as findings a developer could rebuild it from.\n\nRules:\n- Every finding cites evidence: recording ids (e.g. \"probe-014\"), traces as \"trace:<recording id>\",\n  source lines as \"src:<file>:<line>\".\n- tag: \"Seen\" if a recording directly shows it, \"Inferred\" if you concluded it from code or several\n  observations, \"Unknown\" if the evidence cannot settle it.\n- Add a probe to every finding that HTTP calls can test. The pipeline runs each probe on a fresh\n  sandbox after the fixtures, so the fixture variables listed below are available as {{name}}.\n  Findings without a passing probe are capped at \"Inferred\", so prefer testable claims.\n- Cover edge cases the code reveals even if no recording hit them (thresholds, limits, states).\n- Claims describe behavior in plain words: inputs, outputs, states, limits, errors. No code.\n- Put open questions in \"unknowns\": behavior the code hints at that no endpoint or evidence settles.\n- Reply with JSON only, in exactly this shape:\n{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"rule | flow | data | error | contract\",\n      \"claim\": \"One plain-language sentence about behavior.\",\n      \"tag\": \"Seen | Inferred | Unknown\",\n      \"evidence\": [\"probe-014\", \"trace:flow-005\", \"src:demo-target/src/po\n…"
+    },
+    {
+      "label": "Findings for /transfers (what the analyst wrote)",
+      "path": "out/analysis/transfers/findings.json",
+      "bytes": 17800,
+      "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"F1\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"flow\",\n      \"claim\": \"A transfer below the review threshold completes immediately: 201, status \\\"completed\\\", and money values come back as strings with two decimals.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"flow-005\",\n        \"probe-031\",\n        \"probe-036\",\n        \"probe-041\",\n        \"src:demo-target/src/transfers.ts:54\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/transfers\",\n          \"body\": {\n            \"fromWalletId\": \"{{alice}}\",\n            \"toWalletId\": \"{{bob}}\",\n            \"amount\": 100\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"status\": \"completed\",\n            \"amount\": \"100.00\",\n            \"fee\": \"1.00\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F2\",\n      \"route\": \"POST /transfers\",\n      \"kind\": \"rule\",\n      \"claim\": \"The fee is 0.5% of the amount, rounded to cents.\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"probe-041\",\n        \"probe-046\",\n        \"probe-051\",\n        \"src:demo-target/src/policy.ts:9-12\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/transfers\",\n          \"body\": {\n            \"fromWalletId\": \"{{alice}}\",\n            \"toWalletId\": \"{{bob}}\",\n            \"amount\": 3000\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"fee\": \"15.00\"\n          }\n        }\n      }\n    },\n    {\n      \"id\": \"F3\",\n      \"route\": \"\n…"
+    },
+    {
+      "label": "All findings, merged",
+      "path": "out/analysis/findings.json",
+      "bytes": 24474,
+      "preview": "{\n  \"findings\": [\n    {\n      \"id\": \"wallets-F1\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"flow\",\n      \"claim\": \"Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \\\"0.00\\\".\",\n      \"tag\": \"Seen\",\n      \"evidence\": [\n        \"fixture-001\",\n        \"fixture-002\",\n        \"src:demo-target/src/wallets.ts:18-31\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\"\n          }\n        },\n        \"expect\": {\n          \"status\": 201,\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"USD\",\n            \"balance\": \"0.00\",\n            \"held\": \"0.00\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F2\",\n      \"route\": \"POST /wallets\",\n      \"kind\": \"rule\",\n      \"claim\": \"Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \\\"currency\\\".\",\n      \"tag\": \"Inferred\",\n      \"evidence\": [\n        \"fixture-003\",\n        \"src:demo-target/src/wallets.ts:5,23-25\"\n      ],\n      \"probe\": {\n        \"request\": {\n          \"method\": \"POST\",\n          \"path\": \"/wallets\",\n          \"body\": {\n            \"owner\": \"dave\",\n            \"currency\": \"GBP\"\n          }\n        },\n        \"expect\": {\n          \"status\": 400,\n          \"body\": {\n            \"error\": \"VALIDATION_ERROR\",\n            \"field\": \"currency\"\n          }\n        }\n      },\n      \"area\": \"wallets\"\n    },\n    {\n      \"id\": \"wallets-F3\",\n      \"route\": \"POST /wallets\",\n      \"kin\n…"
+    }
+  ],
+  "lines": [
+    {
+      "ms": 0,
+      "level": "info",
+      "msg": "mode: manual (no ANTHROPIC_API_KEY or --manual): prompts are written, findings come from findings.json files"
+    },
+    {
+      "ms": 5,
+      "level": "info",
+      "msg": "area /wallets: 6 requests, routes /wallets, /wallets/:id/deposits, /wallets/:id; evidence bundle 9k chars"
+    },
+    {
+      "ms": 5,
+      "level": "ok",
+      "msg": "area /wallets: 8 findings (8 with probes), 1 unknowns"
+    },
+    {
+      "ms": 9,
+      "level": "info",
+      "msg": "area /transfers: 16 requests, routes /transfers, /transfers/:id; evidence bundle 26k chars"
+    },
+    {
+      "ms": 10,
+      "level": "ok",
+      "msg": "area /transfers: 20 findings (19 with probes), 4 unknowns"
+    }
+  ],
+  "summary": {
+    "mode": "manual",
+    "areas": {
+      "wallets": "using existing findings.json",
+      "transfers": "using existing findings.json"
+    },
+    "findings": 28,
+    "unknowns": 5
+  }
+}

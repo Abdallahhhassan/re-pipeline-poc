@@ -1,0 +1,236 @@
+[
+  {
+    "route": "POST /wallets",
+    "requestFields": {
+      "owner": "string",
+      "currency": "string"
+    },
+    "requestHeaders": [],
+    "responses": {
+      "201": {
+        "fields": {
+          "id": "string",
+          "owner": "string",
+          "currency": "string",
+          "balance": "string",
+          "held": "string",
+          "createdAt": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "id": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "owner": "alice",
+          "currency": "USD",
+          "balance": "0.00",
+          "held": "0.00",
+          "createdAt": "2026-11-11T09:07:18.564Z"
+        }
+      }
+    },
+    "tablesRead": [],
+    "tablesWritten": [
+      "wallets"
+    ]
+  },
+  {
+    "route": "POST /wallets/:id/deposits",
+    "requestFields": {
+      "amount": "number"
+    },
+    "requestHeaders": [],
+    "responses": {
+      "201": {
+        "fields": {
+          "walletId": "string",
+          "balance": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "walletId": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "balance": "20000.00"
+        }
+      }
+    },
+    "tablesRead": [],
+    "tablesWritten": [
+      "wallets",
+      "ledger_entries"
+    ]
+  },
+  {
+    "route": "POST /transfers",
+    "requestFields": {
+      "fromWalletId": "string",
+      "toWalletId": "string",
+      "amount": "number | string"
+    },
+    "requestHeaders": [
+      "Idempotency-Key"
+    ],
+    "responses": {
+      "200": {
+        "fields": {
+          "id": "string",
+          "fromWalletId": "string",
+          "toWalletId": "string",
+          "amount": "string",
+          "fee": "string",
+          "status": "string",
+          "createdAt": "string"
+        },
+        "headers": [
+          "content-type",
+          "idempotent-replay"
+        ],
+        "example": {
+          "id": "78913a2d-b104-4d53-b713-7777c5028c5a",
+          "fromWalletId": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "toWalletId": "fa43818e-91b1-4c7d-a552-2bb69c13229d",
+          "amount": "100.00",
+          "fee": "1.00",
+          "status": "completed",
+          "createdAt": "2026-11-11T09:07:18.594Z"
+        }
+      },
+      "201": {
+        "fields": {
+          "id": "string",
+          "fromWalletId": "string",
+          "toWalletId": "string",
+          "amount": "string",
+          "fee": "string",
+          "status": "string",
+          "createdAt": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "id": "78913a2d-b104-4d53-b713-7777c5028c5a",
+          "fromWalletId": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "toWalletId": "fa43818e-91b1-4c7d-a552-2bb69c13229d",
+          "amount": "100.00",
+          "fee": "1.00",
+          "status": "completed",
+          "createdAt": "2026-11-11T09:07:18.594Z"
+        }
+      },
+      "400": {
+        "fields": {
+          "error": "string",
+          "field": "string",
+          "reason": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "error": "VALIDATION_ERROR",
+          "field": "amount"
+        }
+      },
+      "409": {
+        "fields": {
+          "error": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "error": "INSUFFICIENT_FUNDS"
+        }
+      },
+      "422": {
+        "fields": {
+          "error": "string",
+          "remaining": "number"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "error": "CURRENCY_MISMATCH"
+        }
+      }
+    },
+    "tablesRead": [
+      "transfers",
+      "wallets"
+    ],
+    "tablesWritten": [
+      "transfers",
+      "ledger_entries",
+      "wallets"
+    ]
+  },
+  {
+    "route": "GET /transfers/:id",
+    "requestFields": {},
+    "requestHeaders": [],
+    "responses": {
+      "200": {
+        "fields": {
+          "id": "string",
+          "fromWalletId": "string",
+          "toWalletId": "string",
+          "amount": "string",
+          "fee": "string",
+          "status": "string",
+          "createdAt": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "id": "78913a2d-b104-4d53-b713-7777c5028c5a",
+          "fromWalletId": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "toWalletId": "fa43818e-91b1-4c7d-a552-2bb69c13229d",
+          "amount": "100.00",
+          "fee": "1.00",
+          "status": "completed",
+          "createdAt": "2026-11-11T09:07:18.594Z"
+        }
+      }
+    },
+    "tablesRead": [
+      "transfers"
+    ],
+    "tablesWritten": []
+  },
+  {
+    "route": "GET /wallets/:id",
+    "requestFields": {},
+    "requestHeaders": [],
+    "responses": {
+      "200": {
+        "fields": {
+          "id": "string",
+          "owner": "string",
+          "currency": "string",
+          "balance": "string",
+          "held": "string",
+          "createdAt": "string"
+        },
+        "headers": [
+          "content-type"
+        ],
+        "example": {
+          "id": "decf4781-c3e0-49d6-9a4f-6b5b2a13c1ea",
+          "owner": "alice",
+          "currency": "USD",
+          "balance": "19899.00",
+          "held": "0.00",
+          "createdAt": "2026-11-11T09:07:18.564Z"
+        }
+      }
+    },
+    "tablesRead": [
+      "wallets"
+    ],
+    "tablesWritten": []
+  }
+]

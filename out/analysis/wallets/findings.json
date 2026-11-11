@@ -1,0 +1,226 @@
+{
+  "findings": [
+    {
+      "id": "F1",
+      "route": "POST /wallets",
+      "kind": "flow",
+      "claim": "Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \"0.00\".",
+      "tag": "Seen",
+      "evidence": [
+        "fixture-001",
+        "fixture-002",
+        "src:demo-target/src/wallets.ts:18-31"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets",
+          "body": {
+            "owner": "dave"
+          }
+        },
+        "expect": {
+          "status": 201,
+          "body": {
+            "owner": "dave",
+            "currency": "USD",
+            "balance": "0.00",
+            "held": "0.00"
+          }
+        }
+      }
+    },
+    {
+      "id": "F2",
+      "route": "POST /wallets",
+      "kind": "rule",
+      "claim": "Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \"currency\".",
+      "tag": "Inferred",
+      "evidence": [
+        "fixture-003",
+        "src:demo-target/src/wallets.ts:5,23-25"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets",
+          "body": {
+            "owner": "dave",
+            "currency": "GBP"
+          }
+        },
+        "expect": {
+          "status": 400,
+          "body": {
+            "error": "VALIDATION_ERROR",
+            "field": "currency"
+          }
+        }
+      }
+    },
+    {
+      "id": "F3",
+      "route": "POST /wallets",
+      "kind": "rule",
+      "claim": "Owner is required: a blank owner returns 400 VALIDATION_ERROR with field \"owner\".",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/src/wallets.ts:20-22"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets",
+          "body": {
+            "owner": "   "
+          }
+        },
+        "expect": {
+          "status": 400,
+          "body": {
+            "error": "VALIDATION_ERROR",
+            "field": "owner"
+          }
+        }
+      }
+    },
+    {
+      "id": "F4",
+      "route": "POST /wallets",
+      "kind": "rule",
+      "claim": "Owner names longer than 80 characters are rejected.",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/src/wallets.ts:20"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets",
+          "body": {
+            "owner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        },
+        "expect": {
+          "status": 400,
+          "body": {
+            "error": "VALIDATION_ERROR",
+            "field": "owner"
+          }
+        }
+      }
+    },
+    {
+      "id": "F5",
+      "route": "POST /wallets",
+      "kind": "data",
+      "claim": "Spaces around the owner name are trimmed before saving.",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/src/wallets.ts:28"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets",
+          "body": {
+            "owner": "  erin  "
+          }
+        },
+        "expect": {
+          "status": 201,
+          "body": {
+            "owner": "erin"
+          }
+        }
+      }
+    },
+    {
+      "id": "F6",
+      "route": "POST /wallets/:id/deposits",
+      "kind": "flow",
+      "claim": "A deposit adds the amount and returns 201 with the wallet id and the new balance as a two-decimal string.",
+      "tag": "Seen",
+      "evidence": [
+        "fixture-004",
+        "src:demo-target/src/wallets.ts:40-55"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets/{{bob}}/deposits",
+          "body": {
+            "amount": 50.5
+          }
+        },
+        "expect": {
+          "status": 201,
+          "body": {
+            "balance": "50.50"
+          }
+        }
+      }
+    },
+    {
+      "id": "F7",
+      "route": "POST /wallets/:id/deposits",
+      "kind": "error",
+      "claim": "Deposits follow the same amount rules as transfers: zero returns 400 VALIDATION_ERROR.",
+      "tag": "Inferred",
+      "evidence": [
+        "src:demo-target/src/wallets.ts:42",
+        "src:demo-target/src/errors.ts:15-23"
+      ],
+      "probe": {
+        "request": {
+          "method": "POST",
+          "path": "/wallets/{{bob}}/deposits",
+          "body": {
+            "amount": 0
+          }
+        },
+        "expect": {
+          "status": 400,
+          "body": {
+            "error": "VALIDATION_ERROR",
+            "field": "amount"
+          }
+        }
+      }
+    },
+    {
+      "id": "F8",
+      "route": "GET /wallets/:id",
+      "kind": "contract",
+      "claim": "GET /wallets/:id returns the wallet with balance and held; a malformed or unknown id returns 404 WALLET_NOT_FOUND.",
+      "tag": "Seen",
+      "evidence": [
+        "flow-008",
+        "flow-009",
+        "src:demo-target/src/wallets.ts:33-38"
+      ],
+      "probe": {
+        "request": {
+          "method": "GET",
+          "path": "/wallets/not-a-uuid"
+        },
+        "expect": {
+          "status": 404,
+          "body": {
+            "error": "WALLET_NOT_FOUND"
+          }
+        }
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U1",
+      "question": "Can wallets be closed, renamed or have their currency changed?",
+      "why": "No endpoint for it was observed or found in the routes.",
+      "evidence": [
+        "src:demo-target/src/wallets.ts"
+      ]
+    }
+  ]
+}

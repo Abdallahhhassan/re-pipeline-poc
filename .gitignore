@@ -1,0 +1,4 @@
+node_modules/
+dist/
+out/logs/
+out/capture/spans.jsonl

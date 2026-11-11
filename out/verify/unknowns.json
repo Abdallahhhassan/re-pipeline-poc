@@ -1,0 +1,48 @@
+[
+  {
+    "id": "wallets-U1",
+    "question": "Can wallets be closed, renamed or have their currency changed?",
+    "why": "No endpoint for it was observed or found in the routes.",
+    "evidence": [
+      "src:demo-target/src/wallets.ts"
+    ],
+    "area": "wallets"
+  },
+  {
+    "id": "transfers-U1",
+    "question": "How does a pending_review transfer get approved or rejected?",
+    "why": "Funds are held and the receiver is never credited, but no endpoint releases them.",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:76-81",
+      "probe-046"
+    ],
+    "area": "transfers"
+  },
+  {
+    "id": "transfers-U2",
+    "question": "Is the fee refunded if a held transfer is rejected?",
+    "why": "The fee is charged at creation even for pending_review.",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:78"
+    ],
+    "area": "transfers"
+  },
+  {
+    "id": "transfers-U3",
+    "question": "Should the daily limit follow the UTC day or the customer's local day?",
+    "why": "The window starts at midnight UTC, which is 2am in Cairo.",
+    "evidence": [
+      "src:demo-target/src/policy.ts:20"
+    ],
+    "area": "transfers"
+  },
+  {
+    "id": "transfers-U4",
+    "question": "Is returning the old transfer for a reused Idempotency-Key with a different body intended?",
+    "why": "Many APIs reject that case with 422 instead.",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:24-33"
+    ],
+    "area": "transfers"
+  }
+]

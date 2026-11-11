@@ -1,0 +1,32 @@
+{
+  "recordings": 22,
+  "byPhase": {
+    "fixture": 4,
+    "flow": 7,
+    "probe": 11
+  },
+  "statuses": {
+    "200": 4,
+    "201": 10,
+    "400": 5,
+    "409": 1,
+    "422": 2
+  },
+  "tracedRequests": 22,
+  "routes": [
+    "/wallets",
+    "/wallets/:id/deposits",
+    "/transfers",
+    "/transfers/:id",
+    "/wallets/:id"
+  ],
+  "sqlStatements": 73,
+  "schemaCaptured": true,
+  "sourceFiles": [
+    "demo-target/src/db.ts",
+    "demo-target/src/errors.ts",
+    "demo-target/src/policy.ts",
+    "demo-target/src/transfers.ts",
+    "demo-target/src/wallets.ts"
+  ]
+}

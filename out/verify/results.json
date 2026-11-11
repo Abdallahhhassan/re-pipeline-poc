@@ -1,0 +1,951 @@
+[
+  {
+    "id": "wallets-F1",
+    "route": "POST /wallets",
+    "kind": "flow",
+    "claim": "Creating a wallet returns 201 with the owner, currency USD by default, and balance and held both \"0.00\".",
+    "tag": "Seen",
+    "evidence": [
+      "fixture-001",
+      "fixture-002",
+      "src:demo-target/src/wallets.ts:18-31"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "dave"
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "owner": "dave",
+          "currency": "USD",
+          "balance": "0.00",
+          "held": "0.00"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F2",
+    "route": "POST /wallets",
+    "kind": "rule",
+    "claim": "Currency must be one of USD, EUR, EGP or AED; anything else returns 400 VALIDATION_ERROR with field \"currency\".",
+    "tag": "Seen",
+    "evidence": [
+      "fixture-003",
+      "src:demo-target/src/wallets.ts:5,23-25"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "dave",
+          "currency": "GBP"
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "currency"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F3",
+    "route": "POST /wallets",
+    "kind": "rule",
+    "claim": "Owner is required: a blank owner returns 400 VALIDATION_ERROR with field \"owner\".",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/wallets.ts:20-22"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "   "
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "owner"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F4",
+    "route": "POST /wallets",
+    "kind": "rule",
+    "claim": "Owner names longer than 80 characters are rejected.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/wallets.ts:20"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "owner"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F5",
+    "route": "POST /wallets",
+    "kind": "data",
+    "claim": "Spaces around the owner name are trimmed before saving.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/wallets.ts:28"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets",
+        "body": {
+          "owner": "  erin  "
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "owner": "erin"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F6",
+    "route": "POST /wallets/:id/deposits",
+    "kind": "flow",
+    "claim": "A deposit adds the amount and returns 201 with the wallet id and the new balance as a two-decimal string.",
+    "tag": "Seen",
+    "evidence": [
+      "fixture-004",
+      "src:demo-target/src/wallets.ts:40-55"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets/{{bob}}/deposits",
+        "body": {
+          "amount": 50.5
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "balance": "50.50"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F7",
+    "route": "POST /wallets/:id/deposits",
+    "kind": "error",
+    "claim": "Deposits follow the same amount rules as transfers: zero returns 400 VALIDATION_ERROR.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/wallets.ts:42",
+      "src:demo-target/src/errors.ts:15-23"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/wallets/{{bob}}/deposits",
+        "body": {
+          "amount": 0
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "amount"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "wallets-F8",
+    "route": "GET /wallets/:id",
+    "kind": "contract",
+    "claim": "GET /wallets/:id returns the wallet with balance and held; a malformed or unknown id returns 404 WALLET_NOT_FOUND.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-008",
+      "flow-009",
+      "src:demo-target/src/wallets.ts:33-38"
+    ],
+    "probe": {
+      "request": {
+        "method": "GET",
+        "path": "/wallets/not-a-uuid"
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "WALLET_NOT_FOUND"
+        }
+      }
+    },
+    "area": "wallets",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F1",
+    "route": "POST /transfers",
+    "kind": "flow",
+    "claim": "A transfer below the review threshold completes immediately: 201, status \"completed\", and money values come back as strings with two decimals.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-005",
+      "probe-031",
+      "probe-036",
+      "probe-041",
+      "src:demo-target/src/transfers.ts:54"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "status": "completed",
+          "amount": "100.00",
+          "fee": "1.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F2",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "The fee is 0.5% of the amount, rounded to cents.",
+    "tag": "Seen",
+    "evidence": [
+      "probe-041",
+      "probe-046",
+      "probe-051",
+      "src:demo-target/src/policy.ts:9-12"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 3000
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "fee": "15.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F3",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "The fee never goes below 1.00, so any transfer under 200.00 pays exactly 1.00.",
+    "tag": "Seen",
+    "evidence": [
+      "probe-031",
+      "probe-036",
+      "src:demo-target/src/policy.ts:7,11"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 1.5
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "fee": "1.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F4",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "Transfers of 5,000.00 or more are not settled; they are created with status \"pending_review\". 4,999.99 still completes.",
+    "tag": "Seen",
+    "evidence": [
+      "probe-041",
+      "probe-046",
+      "probe-051",
+      "src:demo-target/src/policy.ts:4,27"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 5000
+        }
+      },
+      "expect": {
+        "status": 201,
+        "body": {
+          "status": "pending_review",
+          "fee": "25.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F5",
+    "route": "POST /transfers",
+    "kind": "data",
+    "claim": "A pending_review transfer charges the sender amount plus fee right away and moves the amount into the sender's \"held\" balance; the receiver is not credited.",
+    "tag": "Seen",
+    "evidence": [
+      "trace:probe-046",
+      "src:demo-target/src/transfers.ts:76-81"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{alice}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "13970.00",
+          "held": "6000.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F6",
+    "route": "POST /transfers",
+    "kind": "data",
+    "claim": "The receiver of a pending_review transfer sees no change to their balance.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:66-81"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{bob}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "0.00",
+          "held": "0.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F7",
+    "route": "POST /transfers",
+    "kind": "data",
+    "claim": "A completed transfer takes amount plus fee from the sender and gives the receiver the amount only.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-005",
+      "flow-008",
+      "flow-009"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "small transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/wallets/{{alice}}"
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "balance": "19899.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F8",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "Each wallet can send at most 10,000.00 per UTC day. Going over returns 422 LIMIT_EXCEEDED with the amount still allowed in \"remaining\".",
+    "tag": "Seen",
+    "evidence": [
+      "probe-051",
+      "probe-056",
+      "src:demo-target/src/policy.ts:3,15-24",
+      "src:demo-target/src/transfers.ts:46-49"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 10000.01
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED",
+          "remaining": 10000
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F9",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "Pending_review transfers count toward the daily limit.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/policy.ts:15-24"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "large transfer",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 6000
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 4500
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED",
+          "remaining": 4000
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F10",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "The daily limit is checked before the balance: a wallet with no money that asks for more than the limit gets LIMIT_EXCEEDED, not INSUFFICIENT_FUNDS.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:46-52"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{bob}}",
+          "toWalletId": "{{alice}}",
+          "amount": 10000.01
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "LIMIT_EXCEEDED"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F11",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "The sender must cover amount plus fee; otherwise 409 INSUFFICIENT_FUNDS. A balance of 100.99 cannot send 100.00.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-011",
+      "src:demo-target/src/transfers.ts:51-52"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "fund bob",
+          "request": {
+            "method": "POST",
+            "path": "/wallets/{{bob}}/deposits",
+            "body": {
+              "amount": 100.99
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{bob}}",
+          "toWalletId": "{{alice}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 409,
+        "body": {
+          "error": "INSUFFICIENT_FUNDS"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F12",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "Repeating a request with the same Idempotency-Key returns the original transfer with 200 and the header Idempotent-Replay: true, without moving money again.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-005",
+      "flow-006",
+      "trace:flow-006"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "first call",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "headers": {
+              "Idempotency-Key": "k-1"
+            },
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "headers": {
+          "Idempotency-Key": "k-1"
+        },
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 100
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "amount": "100.00"
+        },
+        "headers": {
+          "idempotent-replay": "true"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F13",
+    "route": "POST /transfers",
+    "kind": "rule",
+    "claim": "A reused Idempotency-Key returns the original transfer even when the new request asks for a different amount.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:24-33"
+    ],
+    "probe": {
+      "setup": [
+        {
+          "name": "first call",
+          "request": {
+            "method": "POST",
+            "path": "/transfers",
+            "headers": {
+              "Idempotency-Key": "k-2"
+            },
+            "body": {
+              "fromWalletId": "{{alice}}",
+              "toWalletId": "{{bob}}",
+              "amount": 100
+            }
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "headers": {
+          "Idempotency-Key": "k-2"
+        },
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 999
+        }
+      },
+      "expect": {
+        "status": 200,
+        "body": {
+          "amount": "100.00"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F14",
+    "route": "POST /transfers",
+    "kind": "error",
+    "claim": "Sender and receiver must use the same currency; otherwise 422 CURRENCY_MISMATCH.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-010",
+      "src:demo-target/src/transfers.ts:43"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{carol}}",
+          "amount": 50
+        }
+      },
+      "expect": {
+        "status": 422,
+        "body": {
+          "error": "CURRENCY_MISMATCH"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F15",
+    "route": "POST /transfers",
+    "kind": "error",
+    "claim": "Sending to the same wallet returns 400 SAME_WALLET.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:22"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{alice}}",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "SAME_WALLET"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F16",
+    "route": "POST /transfers",
+    "kind": "error",
+    "claim": "Amount must be a JSON number above 0 with at most 2 decimals; strings, zero, negatives and extra decimals return 400 VALIDATION_ERROR with field \"amount\".",
+    "tag": "Seen",
+    "evidence": [
+      "probe-016",
+      "probe-021",
+      "probe-026",
+      "probe-061",
+      "src:demo-target/src/errors.ts:15-23"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "{{bob}}",
+          "amount": 0.005
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "amount",
+          "reason": "max 2 decimals"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F17",
+    "route": "POST /transfers",
+    "kind": "error",
+    "claim": "Wallet ids must be UUIDs; anything else returns 400 VALIDATION_ERROR naming the field.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:20-21"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "abc",
+          "toWalletId": "{{bob}}",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 400,
+        "body": {
+          "error": "VALIDATION_ERROR",
+          "field": "fromWalletId"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F18",
+    "route": "POST /transfers",
+    "kind": "error",
+    "claim": "A well-formed wallet id that does not exist returns 404 WALLET_NOT_FOUND.",
+    "tag": "Seen",
+    "evidence": [
+      "src:demo-target/src/transfers.ts:42"
+    ],
+    "probe": {
+      "request": {
+        "method": "POST",
+        "path": "/transfers",
+        "body": {
+          "fromWalletId": "{{alice}}",
+          "toWalletId": "00000000-0000-4000-8000-000000000000",
+          "amount": 10
+        }
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "WALLET_NOT_FOUND"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F19",
+    "route": "GET /transfers/:id",
+    "kind": "contract",
+    "claim": "GET /transfers/:id returns the transfer as created; an unknown id returns 404 TRANSFER_NOT_FOUND.",
+    "tag": "Seen",
+    "evidence": [
+      "flow-007",
+      "src:demo-target/src/transfers.ts:88-93"
+    ],
+    "probe": {
+      "request": {
+        "method": "GET",
+        "path": "/transfers/00000000-0000-4000-8000-000000000000"
+      },
+      "expect": {
+        "status": 404,
+        "body": {
+          "error": "TRANSFER_NOT_FOUND"
+        }
+      }
+    },
+    "area": "transfers",
+    "claimedTag": "Seen",
+    "probeResult": "pass"
+  },
+  {
+    "id": "transfers-F20",
+    "route": "POST /transfers",
+    "kind": "data",
+    "claim": "Each transfer writes ledger entries: a debit for the amount and a debit for the fee on the sender, plus a credit on the receiver only when completed.",
+    "tag": "Inferred",
+    "evidence": [
+      "trace:flow-005",
+      "trace:probe-046",
+      "src:demo-target/src/transfers.ts:62-75"
+    ],
+    "area": "transfers",
+    "claimedTag": "Inferred",
+    "probeResult": "none"
+  }
+]

@@ -1,0 +1,46 @@
+# Scenarios = ordinary user journeys. In the real setup these come from the Playwright crawler
+# or from recorded sessions; probing (see re.config.yaml) explores the edges automatically.
+fixtures:
+  - name: create wallet alice
+    request: { method: POST, path: /wallets, body: { owner: alice } }
+    save: { alice: body.id }
+  - name: create wallet bob
+    request: { method: POST, path: /wallets, body: { owner: bob } }
+    save: { bob: body.id }
+  - name: create EUR wallet carol
+    request: { method: POST, path: /wallets, body: { owner: carol, currency: EUR } }
+    save: { carol: body.id }
+  - name: fund alice
+    request: { method: POST, path: "/wallets/{{alice}}/deposits", body: { amount: 20000 } }
+
+flows:
+  - name: send money
+    request:
+      method: POST
+      path: /transfers
+      headers: { Idempotency-Key: flow-1 }
+      body: { fromWalletId: "{{alice}}", toWalletId: "{{bob}}", amount: 100 }
+    save: { t1: body.id }
+    probe: true
+  - name: retry the same request
+    request:
+      method: POST
+      path: /transfers
+      headers: { Idempotency-Key: flow-1 }
+      body: { fromWalletId: "{{alice}}", toWalletId: "{{bob}}", amount: 100 }
+  - name: view transfer
+    request: { method: GET, path: "/transfers/{{t1}}" }
+  - name: view sender wallet
+    request: { method: GET, path: "/wallets/{{alice}}" }
+  - name: view receiver wallet
+    request: { method: GET, path: "/wallets/{{bob}}" }
+  - name: send to EUR wallet
+    request:
+      method: POST
+      path: /transfers
+      body: { fromWalletId: "{{alice}}", toWalletId: "{{carol}}", amount: 50 }
+  - name: bob sends more than he has
+    request:
+      method: POST
+      path: /transfers
+      body: { fromWalletId: "{{bob}}", toWalletId: "{{alice}}", amount: 500 }
