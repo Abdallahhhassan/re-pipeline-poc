@@ -41,6 +41,17 @@ export async function site(cfg: Config) {
   const imgDir = path.resolve(cfg.root, "site", "img");
   fs.rmSync(imgDir, { recursive: true, force: true });
   let copied = 0;
+  const imgSizes: Record<string, [number, number]> = {};
+  /** Width and height from a JPEG's frame header, so the page can reserve the right space before it loads. */
+  const jpegSize = (buf: Buffer): [number, number] | undefined => {
+    for (let i = 2; i < buf.length - 9; ) {
+      if (buf[i] !== 0xff) return undefined;
+      const marker = buf[i + 1];
+      if (marker >= 0xc0 && marker <= 0xc2) return [buf.readUInt16BE(i + 7), buf.readUInt16BE(i + 5)];
+      i += 2 + buf.readUInt16BE(i + 2);
+    }
+    return undefined;
+  };
   const img = (rel?: string) => {
     if (!rel) return undefined;
     const src = path.join(cfg.outDir, rel);
@@ -49,6 +60,8 @@ export async function site(cfg: Config) {
     fs.mkdirSync(imgDir, { recursive: true });
     fs.copyFileSync(src, path.join(imgDir, name));
     copied++;
+    const dims = jpegSize(fs.readFileSync(src));
+    if (dims) imgSizes[`img/${name}`] = dims;
     return `img/${name}`;
   };
   const screens = (read("ui", "screens.json") ?? []).map((s: any) => ({ ...s, screenshot: img(s.screenshot) }));
@@ -81,6 +94,7 @@ export async function site(cfg: Config) {
     unknowns: read("verify", "unknowns.json") ?? [],
     parity: par,
     ui: { screens, tries },
+    imgSizes,
     acceptedDifferences: cfg.parity.accepted,
     recordings: read("capture", "recordings.json") ?? [],
     traces: read("capture", "traces.json") ?? [],

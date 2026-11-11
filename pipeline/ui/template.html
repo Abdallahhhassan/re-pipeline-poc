@@ -38,119 +38,166 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--font); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16.5px/1.55 var(--font); }
 a { color: var(--accent); text-underline-offset: 3px; }
 h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.25; }
-h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: 25px; font-weight: 700; }
-h3 { font-size: 18px; font-weight: 600; }
+h1 { font-size: 31px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16.5px; font-weight: 600; }
 p { margin: 0; }
 code, pre, .mono { font-family: var(--mono); }
 code { font-size: 0.88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
 var { font-style: italic; font-family: var(--font); }
-.page { max-width: 820px; margin: 0 auto; padding: 48px 20px 64px; display: flex; flex-direction: column; gap: 56px; }
-.lede { display: flex; flex-direction: column; gap: 16px; }
+.page { max-width: 900px; margin: 0 auto; padding: 40px 20px 56px; display: flex; flex-direction: column; gap: 44px; }
+.lede { display: flex; flex-direction: column; gap: 12px; }
 .when { color: var(--muted); font-size: 15px; }
-.summary { font-size: 20px; line-height: 1.55; max-width: 68ch; }
+.summary { font-size: 18.5px; line-height: 1.55; max-width: 72ch; }
 .summary strong { font-weight: 700; }
 .jump { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 15px; padding-top: 4px; }
-section { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 16px; }
+section { display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 16px; }
 .intro { color: var(--muted); max-width: 66ch; }
 
-/* The run: a rail down the left, one block per step. */
-.rail { display: flex; flex-direction: column; }
-.step { display: grid; grid-template-columns: 132px 1fr; gap: 0 24px; position: relative; padding-bottom: 30px; }
-.step::before { content: ""; position: absolute; left: 131px; top: 10px; bottom: 0; width: 2px; background: var(--rule); }
-.step:last-child::before { bottom: 30px; }
-.step::after { content: ""; position: absolute; left: 126px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
-.step.skipped::after { border-color: var(--rule); }
-.step.failed::after { border-color: var(--bad); background: var(--bad); }
-.step-name { text-align: right; padding-right: 16px; }
-.step-name h3 { font-size: 17px; }
-.step-name .dur { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
-.step-body { display: flex; flex-direction: column; gap: 10px; padding-left: 8px; }
-.step-body .what { max-width: 64ch; }
-.step.skipped .what { color: var(--muted); }
-.files { display: grid; grid-template-columns: 64px 1fr; gap: 4px 10px; font-size: 15px; }
-.files > span { color: var(--muted); }
-.tools li { padding: 2px 0; }
-.tools .where { display: block; color: var(--muted); font-size: 13.5px; font-family: var(--mono); overflow-wrap: anywhere; }
-.files ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-details.file > summary { cursor: pointer; display: inline; color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 3px; }
-details.file > summary::-webkit-details-marker { display: none; }
-details.file > summary .size { color: var(--muted); text-decoration: none; display: inline-block; margin-left: 6px; }
-details.file[open] > summary { font-weight: 600; }
-.viewer { margin: 6px 0 8px; }
-pre { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; overflow: auto; max-height: 340px; white-space: pre-wrap; overflow-wrap: anywhere; }
-details.log > summary, details.more > summary { cursor: pointer; color: var(--muted); font-size: 15px; width: fit-content; }
-details.log > summary:hover, details.more > summary:hover { color: var(--ink); }
-.loglines { margin-top: 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 0; max-height: 360px; overflow: auto; font: 13.5px/1.6 var(--mono); }
-.loglines div { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 1px 14px; }
+/* Section heads with an optional control on the right. */
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.linkbtn { font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Shared: a collapsible row. The summary is one line; the body opens below it. */
+details.row { position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+details.row + details.row { margin-top: 6px; }
+details.row > summary { list-style: none; cursor: pointer; display: grid; align-items: center; gap: 12px; padding: 10px 14px; min-height: 46px; }
+details.row > summary::-webkit-details-marker { display: none; }
+details.row > summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform 0.15s; justify-self: end; }
+details.row[open] > summary::after { transform: rotate(45deg); }
+details.row[open] > summary { border-bottom: 1px solid var(--rule); }
+details.row > summary:hover { background: color-mix(in srgb, var(--code-bg) 50%, transparent); }
+.gist { color: var(--muted); font-size: 14.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dur { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* The run: one row per step, joined by a line. */
+.steps { position: relative; }
+.steps::before { content: ""; position: absolute; left: 22px; top: 23px; bottom: 23px; width: 2px; background: var(--rule); }
+details.step > summary { grid-template-columns: 18px 22px minmax(110px, auto) 1fr auto 12px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--good); position: relative; z-index: 1; justify-self: center; }
+.step.skipped .dot { border-color: var(--rule); }
+.step.failed .dot { border-color: var(--bad); background: var(--bad); }
+.step .num { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.step .name { font-weight: 600; white-space: nowrap; }
+.step.skipped .name { color: var(--muted); }
+.step-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.what { max-width: 72ch; font-size: 15.5px; }
+
+/* Tabs with a panel of fixed height, so switching tabs never moves the page. */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--rule); overflow-x: auto; }
+.tab { font: inherit; font-size: 14px; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 6px 12px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tab .n { font-weight: 400; color: var(--muted); margin-left: 5px; font-variant-numeric: tabular-nums; }
+.panel { height: 300px; overflow: auto; border: 1px solid var(--rule); border-top: 0; border-radius: 0 0 8px 8px; background: var(--bg); }
+.panel.tall { height: 470px; }
+.panel.fit { height: auto; }
+.panel.pad { padding: 12px 14px; }
+.panel > pre, .panel .fview pre { border: 0; border-radius: 0; background: none; max-height: none; padding: 0; }
+
+/* Read / Wrote: file list on the left, its content on the right. */
+.fpane { display: grid; grid-template-columns: minmax(170px, 34%) 1fr; height: 100%; }
+.flist { border-right: 1px solid var(--rule); overflow: auto; padding: 4px 0; }
+.flist button { display: block; width: 100%; text-align: left; font: 13px/1.4 var(--mono); color: var(--ink); background: none; border: 0; padding: 6px 12px; cursor: pointer; overflow-wrap: anywhere; }
+.flist button small { display: block; font-family: var(--font); color: var(--muted); font-size: 12.5px; }
+.flist button:hover { background: var(--surface); }
+.flist button[aria-pressed="true"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--accent); }
+.fview { overflow: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.fview .label { color: var(--muted); font-size: 13.5px; }
+.empty { color: var(--muted); font-size: 14.5px; padding: 12px 14px; }
+
+.tools { list-style: none; margin: 0; padding: 4px 0; }
+.tools li { padding: 8px 14px; font-size: 15px; border-bottom: 1px solid var(--rule); }
+.tools li:last-child { border-bottom: 0; }
+.tools .where { display: block; color: var(--muted); font-size: 13px; font-family: var(--mono); overflow-wrap: anywhere; }
+.loglines { padding: 6px 0; font: 13px/1.6 var(--mono); }
+.loglines div { display: grid; grid-template-columns: 64px 1fr; gap: 12px; padding: 1px 14px; }
 .loglines .t { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .loglines .ok .m { color: var(--good); }
 .loglines .warn .m { color: var(--warn); }
 .loglines .error .m { color: var(--bad); }
 .loglines .m { overflow-wrap: anywhere; }
+pre { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.5; overflow: auto; max-height: 300px; white-space: pre-wrap; overflow-wrap: anywhere; }
+details.file > summary { cursor: pointer; display: inline; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+details.file > summary::-webkit-details-marker { display: none; }
+details.file[open] > summary { font-weight: 600; }
+.viewer { margin: 6px 0 4px; }
 
-/* Rules, grouped by endpoint. */
-.group { display: flex; flex-direction: column; gap: 2px; }
-.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); margin-bottom: 4px; }
-.group-head code { font-size: 16px; background: none; padding: 0; font-weight: 500; }
-.group-head span { color: var(--muted); font-size: 15px; }
+/* Rules: one row per endpoint or screen; its rules scroll inside. */
+details.group > summary { grid-template-columns: minmax(0, auto) 1fr auto 12px; }
+.g-name code { font-size: 15px; background: none; padding: 0; font-weight: 600; }
+.g-state { font-size: 14px; white-space: nowrap; }
+.g-state .bad { color: var(--bad); font-weight: 600; }
+.g-body { max-height: 440px; overflow: auto; }
 details.rule { border-bottom: 1px solid var(--rule); }
-details.rule > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; padding: 10px 2px; align-items: baseline; }
+details.rule:last-child { border-bottom: 0; }
+details.rule > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; padding: 8px 14px; align-items: baseline; font-size: 15.5px; }
 details.rule > summary::-webkit-details-marker { display: none; }
+details.rule > summary:hover { background: var(--bg); }
 details.rule > summary .mark { font-weight: 700; text-align: center; }
-details.rule > summary .status { font-size: 14px; color: var(--muted); white-space: nowrap; }
+details.rule > summary .status { font-size: 13.5px; color: var(--muted); white-space: nowrap; }
 .mark.good { color: var(--good); } .mark.warn { color: var(--warn); } .mark.bad { color: var(--bad); }
-details.rule[open] > summary { padding-bottom: 4px; }
-.test { padding: 4px 0 14px 32px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
-.test .line { display: grid; grid-template-columns: 78px 1fr; gap: 10px; }
+.test { padding: 2px 14px 12px 44px; display: flex; flex-direction: column; gap: 5px; font-size: 14.5px; }
+.test .line { display: grid; grid-template-columns: 74px 1fr; gap: 10px; }
 .test .line > span:first-child { color: var(--muted); }
-.test .based { color: var(--muted); font-size: 14px; }
+.test .based { color: var(--muted); font-size: 13.5px; }
 
-/* Screens: screenshots with what the crawl read from them. */
-.shot { display: block; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
+/* Screens. */
+.shot { display: block; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
 .shot img { display: block; width: 100%; height: auto; }
-.screen { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
-.screen dl { margin: 0; display: grid; grid-template-columns: 70px 1fr; gap: 4px 10px; font-size: 15px; }
+.screen { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; padding: 14px; }
+.screen dl { margin: 0; display: grid; grid-template-columns: 64px 1fr; gap: 4px 10px; font-size: 14.5px; }
 .screen dt { color: var(--muted); }
 .screen dd { margin: 0; overflow-wrap: anywhere; }
-.chain td:first-child { white-space: nowrap; }
-.chain .msg { max-width: 30ch; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
 .pair figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.pair figcaption { font-size: 14px; color: var(--muted); }
-.thumb { width: 220px; }
+.pair figcaption { font-size: 13.5px; color: var(--muted); }
+.thumb { width: 240px; }
 
 /* Questions and rebuild check. */
-.questions { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 14px; }
-.questions li p { color: var(--muted); font-size: 15px; margin-top: 2px; }
-.callout { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--warn); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
-.callout.bad { border-left-color: var(--bad); }
-.callout.good { border-left-color: var(--good); }
-.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.questions { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.questions li p { color: var(--muted); font-size: 14.5px; margin-top: 2px; }
+details.diff > summary { grid-template-columns: 1fr auto 12px; }
+details.diff > summary > span:first-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+details.diff .tag { font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+details.diff .tag.known { color: var(--warn); } details.diff .tag.fix { color: var(--bad); }
+.diff-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.diff-body .small { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--good); border-radius: 8px; padding: 10px 14px; }
+.verdict.warn { border-left-color: var(--warn); } .verdict.bad { border-left-color: var(--bad); }
+.tablewrap { overflow: auto; max-height: 420px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.panel .tablewrap { max-height: none; border: 0; border-radius: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 tr:last-child td { border-bottom: 0; }
-th { font-weight: 600; color: var(--muted); font-size: 14px; }
+th { font-weight: 600; color: var(--muted); font-size: 13.5px; position: sticky; top: 0; background: var(--surface); z-index: 1; }
 td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chain .msg { max-width: 30ch; }
 .same { color: var(--good); } .differs { color: var(--bad); } .expected { color: var(--warn); }
-footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule); padding-top: 18px; display: flex; flex-wrap: wrap; gap: 6px 20px; }
+details.more > summary { cursor: pointer; color: var(--muted); font-size: 15px; width: fit-content; }
+details.more > summary:hover { color: var(--ink); }
+footer { color: var(--muted); font-size: 14.5px; border-top: 1px solid var(--rule); padding-top: 16px; display: flex; flex-wrap: wrap; gap: 6px 20px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { details.row > summary::after { transition: none; } }
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .page { padding-top: 32px; gap: 44px; }
-  h1 { font-size: 28px; }
-  .summary { font-size: 18px; }
-  .step { grid-template-columns: 1fr; padding-left: 22px; }
-  .step::before { left: 5px; }
-  .step::after { left: 0; }
-  .step-name { text-align: left; padding: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
-  .step-body { padding-left: 0; }
-  .test { padding-left: 0; }
-  .test .line, .files { grid-template-columns: 1fr; }
+  .page { padding-top: 28px; gap: 36px; }
+  h1 { font-size: 27px; }
+  .summary { font-size: 17px; }
+  details.step > summary { grid-template-columns: 18px 18px 1fr auto 12px; gap: 8px; }
+  details.step > summary .gist { display: none; }
+  details.group > summary { grid-template-columns: 1fr auto 12px; }
+  details.group > summary .g-count { display: none; }
+  .panel, .panel.tall { height: auto; max-height: 420px; }
+  .fpane { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .flist { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 130px; }
+  .test { padding-left: 14px; }
+  .test .line { grid-template-columns: 1fr; gap: 0; }
   .screen, .pair { grid-template-columns: 1fr; }
+  .thumb { width: 100%; }
 }
 </style>
 </head>
@@ -166,24 +213,21 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   </header>
 
   <section id="run">
-    <h2>How the run went</h2>
-    <p class="intro">Each step in order, with what it did, the tools it used, the files it read and wrote, and its log. Open a file name to see what is inside. What one step writes is what the next one reads.</p>
-    <div class="rail" id="rail"></div>
+    <div class="sec-head"><h2>How the run went</h2><button class="linkbtn" type="button" data-toggle-all="steps">Open all</button></div>
+    <p class="intro">One row per step, in order. Open a step to see what it did, the tools it used, the files it read and wrote, and its log. What one step writes is what the next one reads.</p>
+    <div class="steps" id="steps"></div>
   </section>
 
   <section id="screens">
     <h2>The screens</h2>
     <p class="intro" id="screensIntro"></p>
-    <div id="screenList" style="display:flex;flex-direction:column;gap:28px"></div>
-    <h3>What each try did</h3>
-    <p class="intro">One value changed per try, each on fresh data. Every API call carried a trace id, so it can be followed to the backend route and the SQL it ran.</p>
-    <div class="tablewrap"><table class="chain" id="chainTable"></table></div>
+    <div id="screenTabs"></div>
   </section>
 
   <section id="rules">
-    <h2>Rules it found</h2>
+    <div class="sec-head"><h2>Rules it found</h2><button class="linkbtn" type="button" data-toggle-all="ruleGroups">Open all</button></div>
     <p class="intro" id="rulesIntro"></p>
-    <div id="ruleGroups" style="display:flex;flex-direction:column;gap:28px"></div>
+    <div id="ruleGroups"></div>
   </section>
 
   <section id="questions">
@@ -195,15 +239,17 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   <section id="rebuild">
     <h2>Rebuild check</h2>
     <p class="intro" id="rebuildIntro"></p>
-    <div id="rebuildNotes" style="display:flex;flex-direction:column;gap:10px"></div>
-    <details class="more"><summary id="allChecksLabel">See every check</summary><div class="tablewrap" style="margin-top:10px"><table id="checkTable"></table></div></details>
+    <div id="rebuildVerdict"></div>
+    <div id="rebuildNotes"></div>
+    <div id="rebuildPairs"></div>
+    <details class="more"><summary id="allChecksLabel">See every check</summary><div class="tablewrap" style="margin-top:8px"><table id="checkTable"></table></div></details>
   </section>
 
   <section id="raw">
     <h2>Raw data</h2>
     <p class="intro">What the pipeline captured, for anyone who wants to check its work.</p>
-    <details class="more"><summary id="trafficLabel">Every request it sent</summary><div class="tablewrap" style="margin-top:10px"><table id="trafficTable"></table></div></details>
-    <details class="more"><summary id="contractLabel">The API as observed</summary><div class="tablewrap" style="margin-top:10px"><table id="contractTable"></table></div></details>
+    <details class="more"><summary id="trafficLabel">Every request it sent</summary><div class="tablewrap" style="margin-top:8px"><table id="trafficTable"></table></div></details>
+    <details class="more"><summary id="contractLabel">The API as observed</summary><div class="tablewrap" style="margin-top:8px"><table id="contractTable"></table></div></details>
   </section>
 
   <footer id="footer"></footer>
@@ -221,8 +267,26 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   const vars = (s) => esc(s).replace(/\{\{(\w+)\}\}/g, (_, v) => `<var>${v}'s id</var>`);
   const compact = (v) => JSON.stringify(v);
   const caseLabel = (c) => String(c).replace(/^probe: /, "Variation: ").replace(/^journey: /, "Journey step: ").replace(/^claim [\w-]+: /, "Rule: ").replace(/^ui: /, "On the screen: ").replace(/^screen: /, "Screen ");
-  const shot = (src, alt, cls = "") => src ? `<a class="shot ${cls}" href="${esc(src)}"><img src="${esc(src)}" alt="${esc(alt)}" width="1100" height="720" loading="lazy"></a>` : "";
+  const shot = (src, alt, cls = "") => { if (!src) return ""; const [w, h] = (D.imgSizes || {})[src] || [1100, 720]; return `<a class="shot ${cls}" href="${esc(src)}"><img src="${esc(src)}" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy"></a>`; };
   const ui = D.ui || { screens: [], tries: [] };
+  // Tabs: a row of buttons over panels of fixed height. Clicks are handled once, below, for the whole page.
+  let tabN = 0;
+  // panelClass "fit": the panels share the height of the tallest one, worked out once the page is laid out.
+  const tabset = (tabs, panelClass = "") => {
+    const id = `tabs${++tabN}`;
+    return `<div class="tabs" role="tablist"${panelClass.includes("fit") ? " data-fit" : ""}>${tabs.map((t, i) => `<button class="tab" type="button" role="tab" id="${id}-t${i}" aria-controls="${id}-p${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${esc(t.label)}${t.count != null ? `<span class="n">${t.count}</span>` : ""}</button>`).join("")}</div>` +
+      tabs.map((t, i) => `<div class="panel ${panelClass} ${t.cls || ""}" role="tabpanel" id="${id}-p${i}" aria-labelledby="${id}-t${i}" tabindex="0"${i ? " hidden" : ""}>${t.html}</div>`).join("");
+  };
+  // Read / Wrote: file list on the left, the selected file's content on the right.
+  const FILES = [];
+  const fileView = (f) => f.preview != null
+    ? `<p class="label">${esc(f.label)}${f.bytes != null ? `, ${esc(size(f.bytes))}` : ""}</p><pre>${esc(f.preview)}</pre>`
+    : `<p class="label">${esc(f.label)}</p><p class="empty" style="padding:0">No preview: ${f.path && !/\.[a-z]+$/i.test(f.path) ? "this is a folder" : "not a text file"}.</p>`;
+  const filePane = (items) => {
+    if (!items.length) return `<p class="empty">Nothing.</p>`;
+    const ids = items.map((f) => FILES.push(f) - 1);
+    return `<div class="fpane"><div class="flist">${items.map((f, i) => `<button type="button" data-file="${ids[i]}" aria-pressed="${i === 0}">${esc(String(f.path || f.label).replace(/^.*?\/(out|scenarios|demo-target|rebuilt|pipeline)\//, "$1/"))}<small>${esc(f.label)}</small></button>`).join("")}</div><div class="fview">${fileView(items[0])}</div></div>`;
+  };
   const tidyPath = (p) => esc(p).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, "<var>id</var>");
 
   const results = D.results;
@@ -267,21 +331,37 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
     parity: (s) => `Started the original and the rebuild side by side and ran the same ${s.total} checks on both, each from identical fresh data. ${s.total - s.different - (s.accepted || 0)} gave the same answer, ${s.accepted || 0} differed in a known way, ${s.different} need fixing.`,
     report: (s) => `Wrote a one-page summary of the run for people who will not open this page.`,
   };
-  const toolList = (tools) => tools && tools.length ? `<ul class="tools">${tools.map((t) => `<li>${t.link ? `<a href="${esc(t.link)}">${esc(t.name)}</a>` : `<strong>${esc(t.name)}</strong>`}: ${esc(t.purpose)}${t.where ? `<span class="where">${esc(t.where)}</span>` : ""}</li>`).join("")}</ul>` : "";
-  const fileList = (items) => items.length ? `<ul>${items.map((f) => `<li>${f.preview != null ? `<details class="file"><summary>${esc(f.path || f.label)}<span class="size">${f.path ? esc(size(f.bytes)) : ""}</span></summary><div class="viewer"><p class="intro" style="font-size:14px;margin-bottom:6px">${esc(f.label)}</p><pre>${esc(f.preview)}</pre></div></details>` : esc(f.path || f.label)}</li>`).join("")}</ul>` : "<ul><li>nothing</li></ul>";
-  $("rail").innerHTML = runs.map((r) => `
-    <div class="step${r.skipped ? " skipped" : r.status === "error" ? " failed" : ""}" id="step-${esc(r.step)}">
-      <div class="step-name"><h3>${esc(r.title)}</h3><div class="dur">${r.skipped ? "not run" : esc(dur(r.ms))}</div></div>
-      <div class="step-body">
-        <p class="what">${r.skipped ? tell.rebuild() : (tell[r.step] && r.summary ? tell[r.step](r.summary) : esc(r.does || ""))}</p>
-        ${r.skipped ? "" : `<div class="files">${r.tools && r.tools.length ? `<span>Used</span>${toolList(r.tools)}` : ""}<span>Read</span>${fileList(r.inputs)}<span>Wrote</span>${fileList(r.outputs)}</div>
-        ${r.lines.length ? `<details class="log"><summary>Show the log (${r.lines.length} lines)</summary><div class="loglines" role="log">${r.lines.map((l) => `<div class="${esc(l.level)}"><span class="t">${esc(dur(l.ms))}</span><span class="m">${esc(l.msg)}</span></div>`).join("")}</div></details>` : ""}
-        ${r.error ? `<pre>${esc(r.error)}</pre>` : ""}`}
-      </div>
-    </div>`).join("");
+  // One line per step, so the closed list reads as a table of contents.
+  const gist = {
+    capture: (s) => `${s.recordings} requests, ${s.spans ?? 0} spans, ${plural(s.tables || 0, "table")}`,
+    crawl: (s) => `${plural(s.screens, "screen")}, ${plural(s.interactions, "form try", "form tries")}, ${s.linkedCalls} of ${s.apiCalls} calls traced`,
+    analyze: (s) => `${plural(s.findings, "rule")}, ${plural(s.unknowns, "question")}`,
+    verify: (s) => `${s.seen} passed, ${s.failedProbes.length} failed, ${s.inferredOnly} without a test`,
+    spec: (s) => `${s.seen} confirmed rules, ${plural(s.unknowns, "open question")}`,
+    parity: (s) => `${s.total - s.different - (s.accepted || 0)} of ${s.total} same, ${s.accepted || 0} known, ${s.different} to fix`,
+    report: () => "one-page summary",
+  };
+  const toolList = (tools) => `<ul class="tools">${tools.map((t) => `<li>${t.link ? `<a href="${esc(t.link)}">${esc(t.name)}</a>` : `<strong>${esc(t.name)}</strong>`}: ${esc(t.purpose)}${t.where ? `<span class="where">${esc(t.where)}</span>` : ""}</li>`).join("")}</ul>`;
+  const logLines = (lines) => `<div class="loglines" role="log">${lines.map((l) => `<div class="${esc(l.level)}"><span class="t">${esc(dur(l.ms))}</span><span class="m">${esc(l.msg)}</span></div>`).join("")}</div>`;
+  $("steps").innerHTML = runs.map((r, i) => {
+    const cls = r.skipped ? " skipped" : r.status === "error" ? " failed" : "";
+    const what = r.skipped ? tell.rebuild() : (tell[r.step] && r.summary ? tell[r.step](r.summary) : esc(r.does || ""));
+    const line = r.skipped ? "not run in this pass" : r.status === "error" ? "failed" : gist[r.step] && r.summary ? gist[r.step](r.summary) : "";
+    const tabs = r.skipped ? [] : [
+      ...(r.tools && r.tools.length ? [{ label: "Tools", count: r.tools.length, html: toolList(r.tools) }] : []),
+      { label: "Read", count: r.inputs.length, html: filePane(r.inputs) },
+      { label: "Wrote", count: r.outputs.length, html: filePane(r.outputs) },
+      ...(r.lines.length ? [{ label: "Log", count: r.lines.length, html: logLines(r.lines) }] : []),
+      ...(r.error ? [{ label: "Error", html: `<pre>${esc(r.error)}</pre>`, cls: "pad" }] : []),
+    ];
+    return `<details class="row step${cls}" id="step-${esc(r.step)}">
+      <summary><span class="dot" aria-hidden="true"></span><span class="num">${i + 1}</span><span class="name">${esc(r.title)}</span><span class="gist">${esc(line)}</span><span class="dur">${r.skipped ? "" : esc(dur(r.ms))}</span></summary>
+      <div class="step-body"><p class="what">${what}</p>${tabs.length ? `<div>${tabset(tabs)}</div>` : ""}</div>
+    </details>`;
+  }).join("");
 
   // Rules, grouped by endpoint, in the order a client would meet them.
-  $("rulesIntro").innerHTML = `Each rule is one sentence about how the service behaves. A check mark means its test passed on a fresh copy. Open a rule to see the test.`;
+  $("rulesIntro").innerHTML = `Grouped by endpoint and screen. Each rule is one sentence about how the service behaves; a check mark means its test passed on a fresh copy. Open a rule to see the test. Groups with a wrong rule start open.`;
   const order = (route) => route.startsWith("UI ") ? 200 : ["POST /wallets", "GET /wallets", "GET /wallets/:id", "POST /wallets/:id/deposits", "POST /transfers", "GET /transfers/:id"].indexOf(route) + 1 || 99;
   const routes = [...new Set(results.map((r) => r.route))].sort((a, b) => order(a) - order(b) || a.localeCompare(b));
   const uiTestOf = (r) => {
@@ -318,8 +398,10 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   $("ruleGroups").innerHTML = routes.map((route) => {
     const rs = results.filter((r) => r.route === route);
     const label = route.startsWith("UI ") ? `Screen <code>${esc(route.slice(3))}</code>` : `<code>${esc(route)}</code>`;
-    return `<div class="group"><div class="group-head">${label}<span>${plural(rs.length, "rule")}</span></div>
-      ${rs.map((r) => { const [cls, mark, word] = markOf(r); return `<details class="rule"><summary><span class="mark ${cls}" aria-hidden="true">${mark}</span><span>${esc(r.claim)}</span><span class="status">${word}</span></summary>${testOf(r)}</details>`; }).join("")}</div>`;
+    const ok = rs.filter((r) => r.probeResult === "pass").length, bad = rs.filter((r) => r.probeResult === "fail").length, none = rs.length - ok - bad;
+    const state = [`${ok} confirmed`, ...(bad ? [`<span class="bad">${bad} wrong</span>`] : []), ...(none ? [`${none} not tested`] : [])].join(", ");
+    return `<details class="row group"${bad ? " open" : ""}><summary><span class="g-name">${label}</span><span class="gist g-count">${plural(rs.length, "rule")}</span><span class="g-state">${state}</span></summary>
+      <div class="g-body">${rs.map((r) => { const [cls, mark, word] = markOf(r); return `<details class="rule"><summary><span class="mark ${cls}" aria-hidden="true">${mark}</span><span>${esc(r.claim)}</span><span class="status">${word}</span></summary>${testOf(r)}</details>`; }).join("")}</div></details>`;
   }).join("");
 
   // The screens.
@@ -327,27 +409,32 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
     $("screens").hidden = true;
     $("screensLink").hidden = true;
   } else {
-    $("screensIntro").textContent = `The pipeline opened the app in Chrome with Playwright, followed every link it could reach from the start page, and kept one example of each screen. For each one it read the fields, buttons and the API calls the screen made while loading.`;
+    $("screensIntro").textContent = `Opened in Chrome with Playwright: every screen reachable from the start page, one example each, with its fields, buttons and the API calls it made while loading. The last tab shows each form try.`;
     const callText = (c) => `${c.method} ${c.route || c.path}`;
-    $("screenList").innerHTML = ui.screens.map((s) => `
+    const screenPanel = (s) => `
       <div class="screen">
         ${shot(s.screenshot, `Screenshot of ${s.template}`)}
         <div style="display:flex;flex-direction:column;gap:10px">
-          <h3><code>${esc(s.template)}</code>: ${esc(s.heading)}</h3>
+          <h3>${esc(s.heading)}</h3>
           <dl>
+            <dt>Address</dt><dd><code>${esc(s.template)}</code></dd>
             <dt>Fields</dt><dd>${s.fields.map((f) => `${esc(f.label)} <span class="intro">(${esc(f.kind)}${f.options ? `: ${esc(f.options.join(", "))}` : ""})</span>`).join("<br>") || "none"}</dd>
             <dt>Buttons</dt><dd>${esc(s.buttons.join(", ")) || "none"}</dd>
             <dt>Loads</dt><dd>${s.loadCalls.map((c) => `<code>${esc(callText(c))}</code> → ${c.status}`).join("<br>") || "nothing"}</dd>
           </dl>
-          <details class="file"><summary>What the browser sees (accessibility tree)</summary><div class="viewer"><pre>${esc(s.structure.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, ":id"))}</pre></div></details>
+          <details class="file"><summary>What the browser sees</summary><div class="viewer"><pre>${esc(s.structure.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, ":id"))}</pre></div></details>
         </div>
-      </div>`).join("");
-    $("chainTable").innerHTML = `<thead><tr><th>Typed</th><th>The page said</th><th>API call</th><th>SQL it ran</th></tr></thead><tbody>${ui.tries.map((t) => {
+      </div>`;
+    const triesTable = `<div class="tablewrap"><table class="chain"><thead><tr><th>Typed</th><th>The page said</th><th>API call</th><th>SQL it ran</th></tr></thead><tbody>${ui.tries.map((t) => {
       const post = t.calls.filter((c) => c.method !== "GET");
       const sql = post.flatMap((c) => c.sql).filter((q) => !/^(BEGIN|COMMIT|ROLLBACK)$/.test(q));
       const typed = Object.entries(t.fill).map(([k, v]) => `${esc(k)}: <code>${esc(v === "" ? "(empty)" : v)}</code>`).join("<br>");
       return `<tr><td>${typed}</td><td class="msg">${esc(t.messages.join(" ")) || "nothing"}</td><td>${post.map((c) => `<code>${esc(callText(c))}</code> → ${c.status}`).join("<br>") || `<span class="intro">none, the screen stopped it</span>`}</td><td>${sql.length ? `<details class="file"><summary>${plural(sql.length, "statement")}</summary><div class="viewer"><pre>${esc(sql.join("\n"))}</pre></div></details>` : "none"}</td></tr>`;
-    }).join("")}</tbody>`;
+    }).join("")}</tbody></table></div>`;
+    $("screenTabs").innerHTML = tabset([
+      ...ui.screens.map((s) => ({ label: s.heading || s.template, html: screenPanel(s) })),
+      { label: "Form tries", count: ui.tries.length, html: `<p class="empty">One value changed per try, each on fresh data. Every API call carried a trace id, so it is followed to the backend route and the SQL it ran.</p>${triesTable}` },
+    ], "fit");
   }
 
   // Open questions.
@@ -360,14 +447,19 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   } else {
     $("rebuildIntro").textContent = `The rebuild in rebuilt/ was written only from the spec, never from the original code. To compare them, the pipeline starts both on identical fresh data, sends the same requests, and compares what a client would see, ignoring ids and timestamps that differ on every run.`;
     const notSame = par.results.filter((r) => !r.same);
-    $("rebuildNotes").innerHTML = notSame.length ? notSame.map((r) => {
+    const open = notSame.filter((r) => !acceptedFor(r.case)).length;
+    const same = par.results.length - notSame.length;
+    $("rebuildVerdict").innerHTML = `<div class="verdict${open ? " bad" : notSame.length ? " warn" : ""}"><strong>${same} of ${par.total} checks gave the same answer.</strong> ${notSame.length - open ? `${plural(notSame.length - open, "known difference")}, chosen on purpose. ` : ""}${open ? `${plural(open, "difference")} still need fixing.` : "Nothing left to fix."}</div>`;
+    $("rebuildNotes").innerHTML = notSame.map((r) => {
       const known = acceptedFor(r.case);
       const pics = r.shots ? `<div class="pair"><figure>${shot(r.shots.original, "Original")}<figcaption>Original</figcaption></figure><figure>${shot(r.shots.rebuild, "Rebuild")}<figcaption>Rebuild</figcaption></figure></div>` : "";
-      return `<div class="callout${known ? "" : " bad"}"><strong>${esc(caseLabel(r.case))}</strong><p>${known ? `Known difference: ${esc(known)}` : "Needs fixing in the rebuild."}</p><p class="intro" style="font-size:14px">${esc(r.differences.slice(0, 4).join("; "))}${r.differences.length > 4 ? "; …" : ""}</p>${pics}</div>`;
-    }).join("") : `<div class="callout good"><strong>Every check gave the same answer on both.</strong></div>`;
+      return `<details class="row diff"${known ? "" : " open"}><summary><span>${esc(caseLabel(r.case))}</span><span class="tag ${known ? "known" : "fix"}">${known ? "Known difference" : "Needs fixing"}</span></summary>
+        <div class="diff-body"><p>${known ? esc(known) : "The rebuild gives a different answer here. Send it back to the builder with make fix."}</p><p class="small">${esc(r.differences.slice(0, 4).join("; "))}${r.differences.length > 4 ? "; …" : ""}</p>${pics}</div></details>`;
+    }).join("");
     // Same screens, two designs: the rebuild keeps the labels, buttons and messages, not the look.
     const pairs = par.results.filter((r) => r.same && r.shots && String(r.case).startsWith("screen: "));
-    if (pairs.length) $("rebuildNotes").innerHTML += `<h3 style="margin-top:14px">Same screens, own design</h3><p class="intro">The rebuild keeps every address, label, button name and message the tests rely on. The layout is its own.</p>` + pairs.map((r) => `<div class="pair"><figure>${shot(r.shots.original, `Original ${r.request}`)}<figcaption>Original, <code>${tidyPath(r.case.replace(/^screen: /, ""))}</code></figcaption></figure><figure>${shot(r.shots.rebuild, `Rebuild ${r.request}`)}<figcaption>Rebuild</figcaption></figure></div>`).join("");
+    if (pairs.length) $("rebuildPairs").innerHTML = `<h3 style="margin:10px 0 4px">Same screens, own design</h3><p class="intro" style="margin-bottom:8px">The rebuild keeps every address, label, button name and message the tests rely on. The layout is its own.</p>` +
+      tabset(pairs.map((r) => ({ label: r.case.replace(/^screen: /, ""), html: `<div class="pair" style="padding:14px"><figure>${shot(r.shots.original, `Original ${r.request}`)}<figcaption>Original</figcaption></figure><figure>${shot(r.shots.rebuild, `Rebuild ${r.request}`)}<figcaption>Rebuild</figcaption></figure></div>` })), "fit");
     $("allChecksLabel").textContent = `See all ${par.total} checks`;
     $("checkTable").innerHTML = `<thead><tr><th>Check</th><th>Request</th><th>Result</th></tr></thead><tbody>${par.results.map((r) => `<tr><td>${esc(caseLabel(r.case))}</td><td>${r.kind === "ui" ? esc(r.request) : `<code>${tidyPath(r.request)}</code>`}</td><td class="${r.same ? "same" : acceptedFor(r.case) ? "expected" : "differs"}">${r.same ? "Same" : acceptedFor(r.case) ? "Known difference" : "Different"}</td></tr>`).join("")}</tbody>`;
   }
@@ -382,6 +474,65 @@ footer { color: var(--muted); font-size: 15px; border-top: 1px solid var(--rule)
   }).join("")}</tbody>`;
   $("contractLabel").textContent = `The API as observed (${plural(D.contract.length, "route")})`;
   $("contractTable").innerHTML = `<thead><tr><th>Route</th><th>Request fields</th><th>Statuses seen</th><th>Tables written</th></tr></thead><tbody>${D.contract.map((c) => `<tr><td><code>${esc(c.route)}</code></td><td>${Object.entries(c.requestFields).map(([k, t]) => `${esc(k)} (${esc(t)})`).join(", ") || "none"}</td><td class="num">${Object.keys(c.responses).join(", ")}</td><td>${esc(c.tablesWritten.join(", ") || "none")}</td></tr>`).join("")}</tbody>`;
+
+  // Tabs: click or arrow keys.
+  const select = (tab) => {
+    const list = tab.parentElement;
+    for (const t of list.children) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+    }
+  };
+  document.addEventListener("click", (e) => {
+    const tab = e.target.closest(".tab");
+    if (tab) return select(tab);
+    const file = e.target.closest("[data-file]");
+    if (file) {
+      for (const b of file.parentElement.children) b.setAttribute("aria-pressed", b === file);
+      file.closest(".fpane").querySelector(".fview").innerHTML = fileView(FILES[+file.dataset.file]);
+      return;
+    }
+    const all = e.target.closest("[data-toggle-all]");
+    if (all) {
+      const rows = [...$(all.dataset.toggleAll).querySelectorAll(":scope > details")];
+      const openAll = rows.some((d) => !d.open);
+      rows.forEach((d) => (d.open = openAll));
+      all.textContent = openAll ? "Close all" : "Open all";
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    const tab = e.target.closest?.(".tab");
+    if (!tab || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    const tabs = [...tab.parentElement.children];
+    const next = tabs[(tabs.indexOf(tab) + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+    select(next);
+    next.focus();
+  });
+  // Fit: every panel in a set gets the tallest panel's height (capped), so switching tabs never moves the page.
+  const fitAll = () => {
+    const wide = matchMedia("(min-width: 641px)").matches;
+    for (const list of document.querySelectorAll(".tabs[data-fit]")) {
+      const panels = [...list.children].map((t) => document.getElementById(t.getAttribute("aria-controls")));
+      let tallest = 0;
+      for (const p of panels) {
+        const hidden = p.hidden;
+        p.hidden = false;
+        p.style.height = "auto";
+        tallest = Math.max(tallest, p.scrollHeight);
+        p.hidden = hidden;
+      }
+      for (const p of panels) p.style.height = wide ? `${Math.min(tallest + 2, 440)}px` : "";
+    }
+  };
+  fitAll();
+  addEventListener("resize", fitAll);
+
+  // A link to a step (#step-verify) opens it.
+  const openTarget = () => { const el = location.hash && document.querySelector(location.hash); if (el && el.tagName === "DETAILS") el.open = true; };
+  window.addEventListener("hashchange", openTarget);
+  openTarget();
 
   $("footer").innerHTML = `<span>Made by the reverse engineering pipeline from the files in out/.</span>${D.links.map((l) => `<a href="${esc(l.href)}">${esc(l.label)}</a>`).join("")}`;
 })();
