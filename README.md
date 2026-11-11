@@ -91,6 +91,11 @@ and accepts them, recorded in `re.config.yaml` under `parity.accepted` and in `r
 The verifier was also checked with a deliberately wrong claim (minimum fee 0.99): it was refuted
 and dropped back to Inferred.
 
+## Generalizing to other stacks
+
+[docs/GENERALIZING.md](docs/GENERALIZING.md) maps each step to the open-source tool that replaces the
+built-in one, with effort per adapter and running costs.
+
 ## Honest limits of this PoC
 
 - In this run the analysis (step 6) and the rebuild (step 9) were done by Claude in a chat session,
